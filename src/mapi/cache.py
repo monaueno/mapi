@@ -1,18 +1,29 @@
 """
 cache.py — Read and write the query result cache.
 
-The cache is a JSON file: { "python:gemini:generate text": { code, endpoint, verification } }
+Each API has its own cache file: data/{api}/cache.json
+Cache key format: "python:generate text" (API name implied by folder)
 Exact key match = instant result, no Groq call needed.
 """
 import json
+from pathlib import Path
 
-from .config import CACHE_PATH
+from .config import DATA_DIR
 
 
-def load_cache() -> dict:
-    if CACHE_PATH.exists():
+def get_cache_path(api: str) -> Path:
+    """Get cache file path for a specific API."""
+    api_dir = DATA_DIR / api
+    api_dir.mkdir(parents=True, exist_ok=True)
+    return api_dir / 'cache.json'
+
+
+def load_cache(api: str) -> dict:
+    """Load cache for a specific API."""
+    cache_path = get_cache_path(api)
+    if cache_path.exists():
         try:
-            with open(CACHE_PATH) as f:
+            with open(cache_path) as f:
                 data = json.load(f)
                 return data if isinstance(data, dict) else {}
         except (json.JSONDecodeError, ValueError):
@@ -20,6 +31,8 @@ def load_cache() -> dict:
     return {}
 
 
-def save_cache(cache: dict):
-    with open(CACHE_PATH, 'w') as f:
+def save_cache(api: str, cache: dict):
+    """Save cache for a specific API."""
+    cache_path = get_cache_path(api)
+    with open(cache_path, 'w') as f:
         json.dump(cache, f, indent=2)

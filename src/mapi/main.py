@@ -14,8 +14,8 @@ import os
 import sys
 from pathlib import Path
 
-from .config import GROQ_API_KEY, API_SOURCES
-from .cache import load_cache, save_cache
+from .config import GROQ_API_KEY, API_SOURCES, DATA_DIR
+from .cache import load_cache, save_cache, get_cache_path
 from .scraper import load_api_docs
 from .generator import ask_groq
 from .verifier import verify_endpoint
@@ -53,7 +53,25 @@ def parse_args(args):
 
 def run_test(api_key):
     """Run the last cached request with a real API key."""
-    cache = load_cache()
+    # Find all API cache files
+    cache_files = []
+    if DATA_DIR.exists():
+        for api_dir in DATA_DIR.iterdir():
+            if api_dir.is_dir():
+                cache_path = api_dir / 'cache.json'
+                if cache_path.exists():
+                    cache_files.append((cache_path, api_dir.name))
+
+    if not cache_files:
+        print(f"  {C.RED}No cached requests to test. Run a query first.{C.RESET}")
+        return
+
+    # Find most recently modified cache file
+    most_recent = max(cache_files, key=lambda x: x[0].stat().st_mtime)
+    most_recent_path, api_name = most_recent
+
+    # Load the most recent cache
+    cache = load_cache(api_name)
     if not cache:
         print(f"  {C.RED}No cached requests to test. Run a query first.{C.RESET}")
         return
@@ -61,7 +79,7 @@ def run_test(api_key):
     last_key = list(cache.keys())[-1]
     entry = cache[last_key]
 
-    print(f"\n  {C.BOLD}Testing: {last_key}{C.RESET}")
+    print(f"\n  {C.BOLD}Testing: {api_name} → {last_key}{C.RESET}")
     print(f"  {C.DIM}Endpoint: {entry.get('endpoint', 'unknown')}{C.RESET}\n")
 
     code = entry.get('code', '')
@@ -110,8 +128,8 @@ def main():
         return
 
     # ── Step 1: Check cache ─────────────────────────────────────────
-    cache_key = f"{language}:{api}:{query}"
-    cache = load_cache()
+    cache_key = f"{language}:{query}"
+    cache = load_cache(api)
     if cache_key in cache:
         entry = cache[cache_key]
         print_result(entry['code'], entry.get('verification', {}), language, from_cache=True)
@@ -154,7 +172,7 @@ def main():
         'endpoint': f"{method} {endpoint_url}" if endpoint_url else 'unknown',
         'verification': verification
     }
-    save_cache(cache)
+    save_cache(api, cache)
 
     # ── Step 7: Display ─────────────────────────────────────────────
     print_result(code, verification, language, from_cache=False)

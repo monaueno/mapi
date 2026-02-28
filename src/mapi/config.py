@@ -10,7 +10,6 @@ load_dotenv()
 
 # ── Paths ───────────────────────────────────────────────────────────
 DATA_DIR = Path(__file__).parent / 'data'
-CACHE_PATH = DATA_DIR / 'cache.json'
 
 # ── API Keys ────────────────────────────────────────────────────────
 FIRECRAWL_API_KEY = os.environ.get('FIRECRAWL_API_KEY', '')
