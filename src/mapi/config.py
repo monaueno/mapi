@@ -10,7 +10,7 @@ load_dotenv()
 
 # ── Paths ───────────────────────────────────────────────────────────
 DATA_DIR = Path(__file__).parent / 'data'
-CACHE_PATH = DATA_DIR / 'cache.json'
+LAST_RESULT_PATH = DATA_DIR / 'last_result.json'
 
 # ── API Keys ────────────────────────────────────────────────────────
 FIRECRAWL_API_KEY = os.environ.get('FIRECRAWL_API_KEY', '')
@@ -23,6 +23,7 @@ GROQ_MODEL = 'llama-3.3-70b-versatile'
 API_SOURCES = {
     "googlemaps": {
         "name": "Google Maps Platform",
+        "auth": "Pass API key as query parameter: ?key=YOUR_API_KEY",
         "urls": [
             "https://developers.google.com/maps/documentation/geocoding/requests-geocoding",
             "https://developers.google.com/maps/documentation/directions/get-directions",
@@ -33,6 +34,7 @@ API_SOURCES = {
     },
     "gemini": {
         "name": "Google Gemini API",
+        "auth": "Pass API key as header: x-goog-api-key: YOUR_API_KEY",
         "urls": [
             "https://ai.google.dev/gemini-api/docs/quickstart",
             "https://ai.google.dev/api/generate-content",

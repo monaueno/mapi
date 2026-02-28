@@ -4,6 +4,9 @@ scraper.py — Scrape API docs with Firecrawl and parse them with Groq.
 This runs the FIRST TIME a user queries an API that hasn't been scraped yet.
 After scraping, the structured docs are saved to data/{api}/docs.json.
 Next time, the saved file is loaded instantly — no scraping needed.
+
+Key design: each doc URL is parsed SEPARATELY so Groq gets focused chunks
+instead of one massive blob that gets truncated.
 """
 import json
 import time
@@ -13,6 +16,8 @@ import httpx
 
 from .config import DATA_DIR, FIRECRAWL_API_KEY, GROQ_API_KEY, GROQ_MODEL, API_SOURCES
 from .display import C
+
+MAX_CHARS_PER_URL = 12000
 
 
 def scrape_url(url: str) -> str:
@@ -39,33 +44,30 @@ def scrape_url(url: str) -> str:
         return ''
 
 
-def parse_scraped_docs(markdown: str, api_name: str) -> dict:
-    """Send scraped markdown to Groq to extract structured endpoint data."""
-    if len(markdown) > 15000:
-        markdown = markdown[:15000]
+def parse_single_doc(markdown: str, api_name: str, url: str) -> list:
+    """Parse ONE doc page into a list of endpoint dicts."""
+    if len(markdown) > MAX_CHARS_PER_URL:
+        markdown = markdown[:MAX_CHARS_PER_URL]
 
-    prompt = f"""Parse this {api_name} API documentation into structured JSON.
+    prompt = f"""Parse this {api_name} API documentation page into structured JSON.
 
-Return EXACTLY this format:
+Return a JSON array of endpoints found on this page. For each endpoint return:
 {{
-  "service_name": "human readable name",
-  "auth_type": "API Key",
-  "auth_header": "how to pass auth in requests",
-  "doc_url": "main docs URL",
-  "endpoints": [
-    {{
-      "action": "short verb phrase like 'geocode address to coordinates'",
-      "method": "GET or POST",
-      "endpoint": "full URL with path",
-      "description": "1-2 sentences",
-      "params": "comma-separated list of params with (required) or (optional)"
-    }}
-  ]
+  "action": "short verb phrase like 'generate text content'",
+  "method": "GET or POST",
+  "endpoint": "full URL with path",
+  "description": "1-2 sentences",
+  "params": "comma-separated list of params with (required) or (optional)",
+  "example_body": {{}} // For POST endpoints ONLY: a complete, valid JSON request body that would work. Copy the exact structure from the docs. For GET endpoints, use null.
 }}
 
-Extract EVERY endpoint. Use real full URLs. Return ONLY valid JSON.
+IMPORTANT:
+- Copy request body structures EXACTLY from the documentation. Do not simplify or flatten them.
+- Use real full URLs (e.g. https://generativelanguage.googleapis.com/v1beta/...).
+- If the docs show the body needs nested arrays/objects, include that nesting in example_body.
+- Return ONLY a valid JSON array. No explanation.
 
-Documentation:
+Documentation from {url}:
 {markdown}"""
 
     try:
@@ -85,24 +87,29 @@ Documentation:
         )
         if resp.status_code != 200:
             print(f"  {C.RED}✗ Groq error ({resp.status_code}){C.RESET}")
-            return {}
+            return []
         content = resp.json()['choices'][0]['message']['content'].strip()
         if content.startswith('```'):
             content = content.split('\n', 1)[1]
             if content.endswith('```'):
                 content = content[:-3]
             content = content.strip()
-        return json.loads(content)
+        result = json.loads(content)
+        if isinstance(result, dict) and 'endpoints' in result:
+            result = result['endpoints']
+        if isinstance(result, list):
+            return result
+        return []
     except json.JSONDecodeError as e:
         print(f"  {C.RED}✗ JSON parse error: {e}{C.RESET}")
-        return {}
+        return []
     except Exception as e:
         print(f"  {C.RED}✗ {e}{C.RESET}")
-        return {}
+        return []
 
 
 def scrape_api_docs(api: str) -> dict:
-    """Scrape all doc pages for an API, parse them, save to disk."""
+    """Scrape all doc pages for an API, parse each one separately, merge, save."""
     source = API_SOURCES.get(api)
     if not source:
         return {}
@@ -117,30 +124,57 @@ def scrape_api_docs(api: str) -> dict:
     print(f"\n  {C.BOLD}📡 First time using {source['name']} — scraping docs...{C.RESET}")
     print(f"  {C.DIM}This only happens once. Results are saved for next time.{C.RESET}\n")
 
-    all_markdown = ""
+    all_endpoints = []
     for url in source['urls']:
         md = scrape_url(url)
-        if md:
-            all_markdown += f"\n\n--- SOURCE: {url} ---\n\n{md}"
+        if not md:
+            time.sleep(1)
+            continue
+
+        print(f"  {C.DIM}Parsing: {url}...{C.RESET}")
+        endpoints = parse_single_doc(md, source['name'], url)
+        if endpoints:
+            print(f"  {C.GREEN}✓ {len(endpoints)} endpoints{C.RESET}")
+            all_endpoints.extend(endpoints)
+        else:
+            print(f"  {C.DIM}  (no endpoints found){C.RESET}")
         time.sleep(1)
 
-    if not all_markdown:
-        print(f"  {C.RED}✗ Could not scrape any pages{C.RESET}")
+    if not all_endpoints:
+        print(f"  {C.RED}✗ Could not extract any endpoints{C.RESET}")
         return {}
 
-    print(f"\n  {C.DIM}Parsing docs with AI...{C.RESET}")
-    parsed = parse_scraped_docs(all_markdown, source['name'])
+    # Deduplicate: prefer endpoints with concrete URLs (no {model=...} templates)
+    # and prefer entries that appeared first (quickstart > reference pages)
+    seen_actions = {}
+    unique = []
+    for ep in all_endpoints:
+        url = ep.get('endpoint', '')
+        if not url:
+            continue
+        # Skip template URLs like /v1beta/{model=models/*}:embedContent
+        if '{' in url:
+            continue
+        # Deduplicate by the action suffix (e.g. :generateContent)
+        # This catches both models/gemini-flash:generateContent and models:generateContent
+        action_key = url.split(':')[-1] if ':' in url.split('/')[-1] else url.rsplit('/', 1)[-1]
+        if action_key not in seen_actions:
+            seen_actions[action_key] = True
+            unique.append(ep)
 
-    if parsed and parsed.get('endpoints'):
-        out_dir = DATA_DIR / api
-        out_dir.mkdir(parents=True, exist_ok=True)
-        with open(out_dir / 'docs.json', 'w') as f:
-            json.dump(parsed, f, indent=2)
-        print(f"  {C.GREEN}✓ Saved {len(parsed['endpoints'])} endpoints{C.RESET}\n")
-        return parsed
+    parsed = {
+        'service_name': source['name'],
+        'auth': source.get('auth', 'See documentation'),
+        'doc_url': source['urls'][0],
+        'endpoints': unique,
+    }
 
-    print(f"  {C.RED}✗ Failed to parse docs{C.RESET}")
-    return {}
+    out_dir = DATA_DIR / api
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with open(out_dir / 'docs.json', 'w') as f:
+        json.dump(parsed, f, indent=2)
+    print(f"\n  {C.GREEN}✓ Saved {len(unique)} endpoints total{C.RESET}\n")
+    return parsed
 
 
 def load_api_docs(api: str) -> dict:

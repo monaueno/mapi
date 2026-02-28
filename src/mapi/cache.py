@@ -17,5 +17,6 @@ def load_cache() -> dict:
 
 
 def save_cache(cache: dict):
+    CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(CACHE_PATH, 'w') as f:
         json.dump(cache, f, indent=2)
