@@ -1,7 +1,70 @@
 {
-  "python:generate text": {
-    "code": "import requests\nimport json\n\n# Set API endpoint and API key\nendpoint = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent\"\napi_key = YOUR_API_KEY\n\n# Set model and contents for the request\nmodel = \"gemini-3-flash-preview\"  # model to use for generation\ncontents = \"Write a story about a character who discovers a hidden world.\"  # text to generate content from\n\n# Create a dictionary for the request body\nbody = {\n    \"model\": model,  # model to use for generation\n    \"contents\": contents  # text to generate content from\n}\n\n# Set headers with API key\nheaders = {\n    \"x-goog-api-key\": api_key,  # API key for authentication\n    \"Content-Type\": \"application/json\"  # specify JSON body\n}\n\n# Make the POST request\nresponse = requests.post(endpoint, headers=headers, data=json.dumps(body))\n\n# Check status code\nif response.status_code == 200:\n    print(\"Request successful\")\n    print(response.json())\nelse:\n    print(\"Request failed with status code\", response.status_code)\n    print(response.text)",
-    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent",
+  "python:list models": {
+    "code": "import requests\n\napi_key = \"YOUR_API_KEY\"\nendpoint = \"https://generativelanguage.googleapis.com/v1beta/models\"\n\nheaders = {\n    \"x-goog-api-key\": api_key\n}\n\nresponse = requests.get(endpoint, headers=headers)\n\nif response.status_code == 200:\n    print(response.json())\nelse:\n    print(f\"Error: {response.status_code}\")",
+    "endpoint": "GET https://generativelanguage.googleapis.com/v1beta/models",
+    "verification": {
+      "verified": true,
+      "status": 400,
+      "message": "API key not valid. Please pass a valid API key."
+    }
+  },
+  "python:embed text": {
+    "code": "import requests\nimport json\n\nYOUR_API_KEY = \"YOUR_API_KEY\"\n\nendpoint = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent\"\nheaders = {\n    \"x-goog-api-key\": YOUR_API_KEY\n}\n\nbody = {\n    \"model\": \"models/gemini-embedding-001\",\n    \"content\": {\n        \"parts\": [\n            {\n                \"text\": \"What is the meaning of life?\"\n            }\n        ]\n    }\n}\n\nresponse = requests.post(endpoint, headers=headers, json=body)\n\nif response.status_code == 200:\n    print(response.json())\nelse:\n    print(f\"Error: {response.status_code}\")",
+    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+    "verification": {
+      "verified": true,
+      "status": 403,
+      "message": "Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API."
+    }
+  },
+  "curl:list models": {
+    "code": "curl -X GET \\\n  https://generativelanguage.googleapis.com/v1beta/models \\\n  -H 'x-goog-api-key: YOUR_API_KEY'",
+    "endpoint": "GET https://generativelanguage.googleapis.com/v1beta/models",
+    "verification": {
+      "verified": true,
+      "status": 400,
+      "message": "API key not valid. Please pass a valid API key."
+    }
+  },
+  "go:embed text": {
+    "code": "package main\n\nimport (\n\t\"bytes\"\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"io/ioutil\"\n\t\"net/http\"\n)\n\ntype Content struct {\n\tParts []struct {\n\t\tText string `json:\"text\"`\n\t} `json:\"parts\"`\n}\n\ntype EmbedContentRequest struct {\n\tModel string `json:\"model\"`\n\tContent Content `json:\"content\"`\n}\n\nfunc main() {\n\tvar request EmbedContentRequest\n\trequest.Model = \"models/gemini-embedding-001\"\n\trequest.Content.Parts = []struct {\n\t\tText string `json:\"text\"`\n\t}{\n\t\t{\n\t\t\tText: \"What is the meaning of life?\",\n\t\t},\n\t\t{\n\t\t\tText: \"How much wood would a woodchuck chuck?\",\n\t\t},\n\t\t{\n\t\t\tText: \"How does the brain work?\",\n\t\t},\n\t}\n\n\tjsonBytes, err := json.Marshal(request)\n\tif err != nil {\n\t\tfmt.Println(err)\n\t\treturn\n\t}\n\n\treq, err := http.NewRequest(\"POST\", \"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent\", bytes.NewBuffer(jsonBytes))\n\tif err != nil {\n\t\tfmt.Println(err)\n\t\treturn\n\t}\n\n\treq.Header.Set(\"x-goog-api-key\", \"YOUR_API_KEY\")\n\n\tclient := &http.Client{}\n\tresp, err := client.Do(req)\n\tif err != nil {\n\t\tfmt.Println(err)\n\t\treturn\n\t}\n\tdefer resp.Body.Close()\n\n\tbody, err := ioutil.ReadAll(resp.Body)\n\tif err != nil {\n\t\tfmt.Println(err)\n\t\treturn\n\t}\n\n\tfmt.Println(string(body))\n}",
+    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+    "verification": {
+      "verified": true,
+      "status": 403,
+      "message": "Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API."
+    }
+  },
+  "javascript:stream response": {
+    "code": "const axios = require('axios');\n\nconst api_key = 'YOUR_API_KEY';\nconst endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent';\n\naxios({\n  method: 'post',\n  url: endpoint,\n  headers: {\n    'x-goog-api-key': api_key\n  },\n  data: {\n    \"contents\": [\n      {\n        \"parts\": [\n          {\n            \"text\": \"Write a story about a magic backpack.\"\n          }\n        ]\n      }\n    ]\n  }\n})\n.then(response => {\n  console.log(response.data);\n})\n.catch(error => {\n  console.error(error);\n});",
+    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent",
+    "verification": {
+      "verified": true,
+      "status": 403,
+      "message": "[{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call thi"
+    }
+  },
+  "python:get model info": {
+    "code": "import requests\nimport json\n\ndef get_model_info():\n    url = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash\"\n    headers = {\n        \"x-goog-api-key\": \"YOUR_API_KEY\"\n    }\n\n    try:\n        response = requests.get(url, headers=headers)\n        response.raise_for_status()\n        print(response.text)\n    except requests.exceptions.HTTPError as errh:\n        print(f\"HTTP Error: {errh}\")\n    except Exception as e:\n        print(f\"An error occurred: {e}\")\n\nget_model_info()",
+    "endpoint": "GET https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash",
+    "verification": {
+      "verified": true,
+      "status": 400,
+      "message": "API key not valid. Please pass a valid API key."
+    }
+  },
+  "curl:embed text": {
+    "code": "curl -X POST \\\n  https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent \\\n  -H 'x-goog-api-key: YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"model\": \"models/gemini-embedding-001\", \"content\": {\"parts\": [{\"text\": \"What is the meaning of life?\"}]}}' \\\n  --fail \\\n  -s",
+    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+    "verification": {
+      "verified": true,
+      "status": 403,
+      "message": "Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API."
+    }
+  },
+  "java:generate text": {
+    "code": "import java.io.IOException;\nimport java.util.logging.Level;\nimport java.util.logging.Logger;\n\nimport com.fasterxml.jackson.core.JsonProcessingException;\nimport com.fasterxml.jackson.databind.ObjectMapper;\n\nimport okhttp3.MediaType;\nimport okhttp3.OkHttpClient;\nimport okhttp3.Request;\nimport okhttp3.RequestBody;\nimport okhttp3.Response;\n\npublic class Main {\n\n    public static void main(String[] args) {\n        String apiKey = \"YOUR_API_KEY\";\n        String url = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent\";\n        String userQuery = \"Write a story about a magic backpack.\";\n\n        ObjectMapper mapper = new ObjectMapper();\n        try {\n            RequestBody body = RequestBody.create(MediaType.get(\"application/json\"), mapper.writeValueAsString(\n                    \"{\\\"contents\\\": [{\\\"parts\\\": [{\\\"text\\\": \\\"\" + userQuery + \"\\\"}]}]}\"));\n\n            OkHttpClient client = new OkHttpClient();\n            Request request = new Request.Builder()\n                    .url(url)\n                    .post(body)\n                    .header(\"x-goog-api-key\", apiKey)\n                    .build();\n\n            Response response = client.newCall(request).execute();\n            if (response.isSuccessful()) {\n                System.out.println(response.body().string());\n            } else {\n                System.out.println(\"Failed to generate text. Status code: \" + response.code());\n            }\n        } catch (JsonProcessingException | IOException ex) {\n            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);\n        }\n    }\n}",
+    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
     "verification": {
       "verified": true,
       "status": 403,

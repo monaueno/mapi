@@ -15,7 +15,7 @@ LAST_RESULT_PATH = DATA_DIR / 'last_result.json'
 # ── API Keys ────────────────────────────────────────────────────────
 FIRECRAWL_API_KEY = os.environ.get('FIRECRAWL_API_KEY', '')
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
-GROQ_MODEL = 'llama-3.3-70b-versatile'
+GROQ_MODEL = os.environ.get('GROQ_MODEL', 'llama-3.3-70b-versatile')
 
 # ── Hardcoded doc URLs per API ──────────────────────────────────────
 # First time a user queries an API, we scrape these pages with Firecrawl.

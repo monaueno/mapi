@@ -7,19 +7,111 @@
       "action": "generate content",
       "method": "POST",
       "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-      "description": "Generate content using the Gemini API",
-      "params": "model (required), contents (required)",
+      "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the text generation guide for detailed usage information. Input capabilities differ between models, including tuned models.",
+      "params": "",
       "example_body": {
         "contents": [
           {
             "parts": [
               {
-                "text": "Explain how AI works"
+                "text": "Write a story about a magic backpack."
               }
             ]
           }
         ]
       }
+    },
+    {
+      "action": "stream generate content",
+      "method": "POST",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent",
+      "description": "Generates a streamed response from the model given an input `GenerateContentRequest`.",
+      "params": "",
+      "example_body": {
+        "contents": [
+          {
+            "parts": [
+              {
+                "text": "Write a story about a magic backpack."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "action": "embed content",
+      "method": "POST",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+      "description": "Generates a text embedding vector from the input `Content` using the specified Gemini Embedding model.",
+      "params": "",
+      "example_body": {
+        "model": "models/gemini-embedding-001",
+        "content": {
+          "parts": [
+            {
+              "text": "What is the meaning of life?"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "action": "batch embed contents",
+      "method": "POST",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents",
+      "description": "Generates multiple embedding vectors from the input `Content` which consists of a batch of strings represented as `EmbedContentRequest` objects.",
+      "params": "",
+      "example_body": {
+        "requests": [
+          {
+            "model": "models/gemini-embedding-001",
+            "content": {
+              "parts": [
+                {
+                  "text": "What is the meaning of life?"
+                }
+              ]
+            }
+          },
+          {
+            "model": "models/gemini-embedding-001",
+            "content": {
+              "parts": [
+                {
+                  "text": "How much wood would a woodchuck chuck?"
+                }
+              ]
+            }
+          },
+          {
+            "model": "models/gemini-embedding-001",
+            "content": {
+              "parts": [
+                {
+                  "text": "How does the brain work?"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "action": "get model",
+      "method": "GET",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash",
+      "description": "Gets information about a specific `Model` such as its version number, token limits, parameters and other metadata. Refer to the Gemini models guide for detailed model information.",
+      "params": "",
+      "example_body": null
+    },
+    {
+      "action": "list models",
+      "method": "GET",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models",
+      "description": "Lists the `Model`s available through the Gemini API.",
+      "params": "",
+      "example_body": null
     }
   ]
 }
