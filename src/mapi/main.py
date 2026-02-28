@@ -20,8 +20,8 @@ load_dotenv()
 
 DATA_DIR = Path(__file__).parent / 'data'
 CACHE_PATH = DATA_DIR / 'cache.json'
-FIRECRAWL_API_KEY = os.environ.get('FIRECRAWL_API_KEY', '')
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+FIRECRAWL_API_KEY = os.environ.get('fc_api_key', '')
+GROQ_API_KEY = os.environ.get('groq_api_key', '')
 GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 API_SOURCES = {

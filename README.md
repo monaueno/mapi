@@ -25,16 +25,16 @@ mapi -<language> <api> <what you need>
 ### Examples
 
 ```bash
-mapi -python google maps get directions
+mapi -python googlemaps get directions
 mapi -javascript gemini generate content
 ```
 
 **Any language works.** Just change the flag:
 
 ```bash
-mapi -python google maps get directions
-mapi -rust google maps get directions
-mapi -go google maps get directions
+mapi -python googlemaps get directions
+mapi -rust googlemaps get directions
+mapi -go googlemaps get directions
 ```
 
 ## How It Works
@@ -68,13 +68,17 @@ Runs the last generated request with your actual key and shows the response.
 mapi/
 ├── pyproject.toml
 ├── README.md
-└── src/
-    └── mapi/
-        ├── __init__.py
-        ├── main.py            ← all logic in one file
-        └── data/
-            ├── google_docs.json  ← pre-scraped API docs
-            └── cache.json        ← fills up as people use it
+├──src/mapi/
+    ├── __init__.py
+    ├── main.py          ← entry point, arg parsing, ties everything together
+    ├── scraper.py       ← Firecrawl scraping + Groq doc parsing
+    ├── generator.py     ← Groq code generation
+    ├── verifier.py      ← endpoint verification
+    ├── cache.py         ← cache read/write
+    ├── display.py       ← colors, printing, formatting
+    ├── config.py        ← API keys, paths, hardcoded URLs
+    └── data/
+        └── cache.json
 ```
 
 Most recent result is always stored in last_result.json so mapi always knows that mapi test should test the 
