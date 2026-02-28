@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+src/mapi/data/cache.json

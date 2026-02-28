@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mapi"
+version = "0.1.0"
+description = "Find the exact API call you need with a simple prompt"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "httpx>=0.24.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+mapi = "mapi.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mapi = ["data/**/*.json", "data/*.json"]
