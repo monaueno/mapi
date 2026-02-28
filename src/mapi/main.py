@@ -3,11 +3,11 @@ main.py — Entry point. Parses args and orchestrates the flow.
 
 Flow:
     1. Parse command:  mapi -python gemini generate text
-    2. Check last_result.json → cache hit? print and done
-    3. Load docs    →  not scraped yet? scraper.py handles it (Firecrawl)
+    2. Check cache  →  data/{api}/cache.json hit? print and done
+    3. Load docs    →  data/{api}/docs.json exists? use it. Otherwise scrape.
     4. Generate     →  Groq creates the code
     5. Verify       →  hit the real endpoint to confirm it exists
-    6. Save         →  write last_result.json (cache + test source)
+    6. Save         →  write to cache.json AND last_result.json
     7. Display      →  print the code with verification badge
 """
 import json
@@ -16,6 +16,7 @@ import sys
 import httpx
 
 from .config import GROQ_API_KEY, API_SOURCES, DATA_DIR, LAST_RESULT_PATH
+from .cache import load_cache, save_cache
 from .scraper import load_api_docs
 from .generator import ask_groq
 from .verifier import verify_endpoint
@@ -58,26 +59,23 @@ def parse_args(args):
     return {'language': language, 'api': api, 'query': query}
 
 
-def build_request_from_docs(api: str, method: str, endpoint_url: str, query: str) -> dict:
-    """Build a test request from the API source config and scraped docs.
+def build_request(api: str, method: str, endpoint_url: str, query: str) -> dict:
+    """Build structured request details for last_result.json.
 
-    Uses the auth method from config.py and the example_body from the matched
-    endpoint in docs.json — works regardless of what language was generated.
+    Uses auth from config.py and example_body from the matched endpoint
+    in docs.json. Stored with YOUR_API_KEY placeholder — mapi test
+    substitutes the real key at runtime.
     """
     source = API_SOURCES.get(api, {})
     auth_str = source.get('auth', '')
 
     headers = {'Content-Type': 'application/json'}
-    # Parse auth config into a header
-    # Format: "Pass API key as header: x-goog-api-key: YOUR_API_KEY"
     if 'header:' in auth_str.lower():
-        # Extract "x-goog-api-key: YOUR_API_KEY" from the auth string
         after_header = auth_str.split('header:', 1)[1].strip()
         if ':' in after_header:
             key, val = after_header.split(':', 1)
             headers[key.strip()] = val.strip()
 
-    # Get the example_body from the matched endpoint in docs
     body = None
     docs = load_api_docs(api)
     if docs:
@@ -86,7 +84,6 @@ def build_request_from_docs(api: str, method: str, endpoint_url: str, query: str
                 body = ep.get('example_body')
                 break
 
-    # Substitute the user's query into the body text field
     if body and isinstance(body, dict):
         body = _sub_query_in_body(body, query)
 
@@ -115,18 +112,22 @@ def _sub_query_in_body(obj, query):
     return obj
 
 
-def save_last_result(cache_key, language, code, endpoint, verification, api, query):
-    """Save the result — serves as both cache and source for `mapi test`."""
+def save_last_result(code, endpoint_str, verification, api, query):
+    """Save to last_result.json for mapi test. Includes request details."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Build structured request so mapi test can fire it directly
+    parts = endpoint_str.split(' ', 1)
+    method = parts[0] if len(parts) == 2 else 'GET'
+    endpoint_url = parts[1] if len(parts) == 2 else parts[0]
+    request = build_request(api, method, endpoint_url, query) if endpoint_url and endpoint_str != 'unknown' else None
+
     with open(LAST_RESULT_PATH, 'w') as f:
         json.dump({
-            'cache_key': cache_key,
-            'language': language,
             'code': code,
-            'endpoint': endpoint,
+            'endpoint': endpoint_str,
             'verification': verification,
-            'api': api,
-            'query': query,
+            'request': request,
         }, f, indent=2)
 
 
@@ -156,28 +157,17 @@ def run_test(api_key):
         print(f"  {C.RED}No previous result to test. Run a query first.{C.RESET}")
         return
 
-    endpoint_str = entry.get('endpoint', '')
-    api = entry.get('api', '')
-    query = entry.get('query', '')
-
-    if not endpoint_str or endpoint_str == 'unknown':
-        print(f"  {C.RED}No endpoint saved. Re-run your query to regenerate.{C.RESET}")
+    req = entry.get('request')
+    if not req or not req.get('url'):
+        print(f"  {C.RED}No request details saved. Re-run your query to regenerate.{C.RESET}")
         return
 
-    # Parse "POST https://..." into method + url
-    parts = endpoint_str.split(' ', 1)
-    method = parts[0] if len(parts) == 2 else 'GET'
-    endpoint_url = parts[1] if len(parts) == 2 else parts[0]
-
-    # Build request from docs + config (not from generated code)
-    req = build_request_from_docs(api, method, endpoint_url, query)
-
-    # Substitute the user's real API key
-    headers = sub_api_key(req['headers'], api_key)
+    method = req['method']
     url = sub_api_key(req['url'], api_key)
+    headers = sub_api_key(req.get('headers', {}), api_key)
     body = sub_api_key(req.get('body'), api_key)
 
-    print(f"\n  {C.DIM}Testing: {method} {endpoint_url}{C.RESET}")
+    print(f"\n  {C.DIM}Testing: {method} {req['url']}{C.RESET}")
 
     try:
         if method.upper() == 'POST':
@@ -233,11 +223,13 @@ def main():
         print(f"  Available: {C.CYAN}{', '.join(API_SOURCES.keys())}{C.RESET}\n")
         return
 
-    # ── Step 1: Check cache (last_result.json) ──────────────────────
-    cache_key = f"{language}:{api}:{query}"
-    cached = load_last_result()
-    if cached and cached.get('cache_key') == cache_key:
-        print_result(cached['code'], cached.get('verification', {}), language, from_cache=True)
+    # ── Step 1: Check cache ─────────────────────────────────────────
+    cache_key = f"{language}:{query}"
+    cache = load_cache(api)
+    if cache_key in cache:
+        entry = cache[cache_key]
+        save_last_result(entry['code'], entry.get('endpoint', 'unknown'), entry.get('verification', {}), api, query)
+        print_result(entry['code'], entry.get('verification', {}), language, from_cache=True)
         return
 
     # ── Step 2: Load docs (auto-scrapes if first time) ──────────────
@@ -271,9 +263,15 @@ def main():
     else:
         verification = {'verified': False, 'message': 'Could not extract endpoint URL'}
 
-    # ── Step 6: Save last result ────────────────────────────────────
+    # ── Step 6: Save to cache + last_result ─────────────────────────
     endpoint_str = f"{method} {endpoint_url}" if endpoint_url else 'unknown'
-    save_last_result(cache_key, language, code, endpoint_str, verification, api, query)
+    cache[cache_key] = {
+        'code': code,
+        'endpoint': endpoint_str,
+        'verification': verification
+    }
+    save_cache(api, cache)
+    save_last_result(code, endpoint_str, verification, api, query)
 
     # ── Step 7: Display ─────────────────────────────────────────────
     print_result(code, verification, language, from_cache=False)
