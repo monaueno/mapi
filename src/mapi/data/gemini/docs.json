@@ -6,7 +6,7 @@
     {
       "action": "generate content",
       "method": "POST",
-      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent",
       "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the text generation guide for detailed usage information. Input capabilities differ between models, including tuned models.",
       "params": "",
       "example_body": {
@@ -24,7 +24,7 @@
     {
       "action": "stream generate content",
       "method": "POST",
-      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:streamGenerateContent",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent",
       "description": "Generates a streamed response from the model given an input `GenerateContentRequest`.",
       "params": "",
       "example_body": {
@@ -100,7 +100,7 @@
     {
       "action": "get model",
       "method": "GET",
-      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview",
       "description": "Gets information about a specific `Model` such as its version number, token limits, parameters and other metadata. Refer to the Gemini models guide for detailed model information.",
       "params": "",
       "example_body": null
