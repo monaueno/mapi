@@ -1,15 +1,25 @@
 {
-  "service_name": "Gemini API",
-  "auth_type": "API Key",
-  "auth_header": "x-goog-api-key",
+  "service_name": "Google Gemini API",
+  "auth": "Pass API key as header: x-goog-api-key: YOUR_API_KEY",
   "doc_url": "https://ai.google.dev/gemini-api/docs/quickstart",
   "endpoints": [
     {
       "action": "generate content",
       "method": "POST",
-      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
       "description": "Generate content using the Gemini API",
-      "params": "model (required), contents (required)"
+      "params": "model (required), contents (required)",
+      "example_body": {
+        "contents": [
+          {
+            "parts": [
+              {
+                "text": "Explain how AI works"
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }
