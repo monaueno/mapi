@@ -47,6 +47,43 @@ def clean_curl_output(code: str) -> str:
     return '\n'.join(lines).strip()
 
 
+def fix_hallucinated_urls(code: str, docs: dict) -> str:
+    """Replace any hallucinated API URLs with the correct ones from docs.json.
+
+    Groq sometimes swaps model names or versions in URLs. For each endpoint
+    in docs, we find URLs that match the base path + action suffix but differ
+    in the middle (e.g. wrong model name) and replace them with the real URL.
+    """
+    endpoints = docs.get('endpoints', [])
+    for ep in endpoints:
+        real_url = ep.get('endpoint', '')
+        if not real_url:
+            continue
+
+        # Extract the base (everything before /models/) and the action suffix
+        # e.g. "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent"
+        #   → base = "https://generativelanguage.googleapis.com/v1beta/models/"
+        #   → suffix = ":generateContent"
+        parts = real_url.split('/models/')
+        if len(parts) != 2:
+            continue
+        base = parts[0] + '/models/'
+        # The suffix is the action after the colon, if any
+        if ':' in parts[1]:
+            suffix = ':' + parts[1].split(':', 1)[1]
+        else:
+            # For URLs like /models/gemini-2.0-flash (get model), match the path end
+            suffix = ''
+
+        if suffix:
+            # Match: base + any-model-name + suffix
+            # This catches hallucinated model names like gemini-2.0-flash, gemini-pro, etc.
+            pattern = re.escape(base) + r'[a-zA-Z0-9._-]+' + re.escape(suffix)
+            code = re.sub(pattern, real_url, code)
+
+    return code
+
+
 def ask_groq(language: str, query: str, docs: dict) -> str:
     """Generate code for an API call using Groq."""
     system_prompt = f"""You are mapi, an API code generator. Given API documentation and a user query, return ONLY the code to make the HTTP request.
@@ -58,9 +95,10 @@ Rules:
 4. Make it complete and runnable — include imports, headers, everything.
 5. Include error handling (check status code).
 6. Print the response.
-7. If the endpoint has an example_body, use that EXACT JSON structure in the request. Substitute the user's query into the text/content fields but keep the nesting identical.
-8. JSON strings and request bodies must be valid JSON with no comments or trailing content.
-9. For curl/bash: do NOT pipe curl output through anything. No | pipes, no -w flag, no subshells. Just a plain curl command that prints the response to stdout."""
+7. Use the endpoint URLs EXACTLY as provided — do not change model names, versions, or any part of the URL. Copy them character for character.
+8. If the endpoint has an example_body, use that EXACT JSON structure in the request. Substitute the user's query into the text/content fields but keep the nesting identical.
+9. JSON strings and request bodies must be valid JSON with no comments or trailing content.
+10. For curl/bash: do NOT pipe curl output through anything. No | pipes, no -w flag, no subshells. Just a plain curl command that prints the response to stdout."""
 
     user_msg = f"""API: {docs['service_name']}
 Auth: {docs.get('auth', 'See documentation')}
@@ -108,6 +146,8 @@ Return ONLY the {language} code. Nothing else."""
         # Strip pipes and -w flags that break curl output
         if language in ('curl', 'bash'):
             content = clean_curl_output(content)
+        # Fix any hallucinated URLs — enforce docs.json as source of truth
+        content = fix_hallucinated_urls(content, docs)
         return content
 
     except Exception as e:
