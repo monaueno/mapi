@@ -1,13 +1,16 @@
 """
 scraper.py — Scrape API docs with Firecrawl and parse them with Groq.
 
-This runs the FIRST TIME a user queries an API that hasn't been scraped yet.
-After scraping, the structured docs are saved to data/{api}/docs.json.
-Next time, the saved file is loaded instantly — no scraping needed.
+Two-layer cache per API:
+  1. data/{api}/raw.json   — raw markdown from Firecrawl (never re-scrape same URL)
+  2. data/{api}/docs.json  — structured endpoints parsed by Groq
+
+If docs.json exists with endpoints → use it (fastest)
+If raw.json exists but no docs.json → re-parse with Groq (no Firecrawl needed)
+If neither exists → Firecrawl scrapes → save raw.json → Groq parses → save docs.json
 """
 import json
 import time
-from pathlib import Path
 
 import httpx
 
@@ -37,6 +40,76 @@ def scrape_url(url: str) -> str:
     except Exception as e:
         print(f"  {C.RED}✗ {e}{C.RESET}")
         return ''
+
+
+def load_raw(api: str) -> dict:
+    """Load saved raw markdown from data/{api}/raw.json."""
+    raw_file = DATA_DIR / api / 'raw.json'
+    if raw_file.exists():
+        try:
+            with open(raw_file) as f:
+                return json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            pass
+    return {}
+
+
+def save_raw(api: str, raw_data: dict):
+    """Save raw markdown to data/{api}/raw.json."""
+    out_dir = DATA_DIR / api
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with open(out_dir / 'raw.json', 'w') as f:
+        json.dump(raw_data, f, indent=2)
+
+
+def fetch_raw_markdown(api: str) -> str:
+    """
+    Get raw markdown for an API.
+    Checks raw.json first, only scrapes URLs we don't already have.
+    """
+    source = API_SOURCES.get(api)
+    if not source:
+        return ''
+
+    existing_raw = load_raw(api)
+    urls_to_scrape = [url for url in source['urls'] if url not in existing_raw]
+
+    # Everything already cached
+    if not urls_to_scrape:
+        print(f"  {C.GREEN}✓ Using saved scraped data (no Firecrawl needed){C.RESET}")
+        all_markdown = ""
+        for url in source['urls']:
+            all_markdown += f"\n\n--- SOURCE: {url} ---\n\n{existing_raw[url]}"
+        return all_markdown
+
+    # Need Firecrawl for some URLs
+    if not FIRECRAWL_API_KEY:
+        print(f"\n  {C.RED}✗ FIRECRAWL_API_KEY not set{C.RESET}")
+        print(f"  Need it to scrape {source['name']} docs.")
+        print(f"  Get a free key: {C.CYAN}https://firecrawl.dev{C.RESET}")
+        print(f"  Add to .env: FIRECRAWL_API_KEY=fc-your_key\n")
+        return ''
+
+    print(f"\n  {C.BOLD}📡 Scraping {len(urls_to_scrape)} new page(s) from {source['name']}...{C.RESET}")
+    if existing_raw:
+        print(f"  {C.DIM}Already have {len(existing_raw)} page(s) cached.{C.RESET}")
+    print()
+
+    for url in urls_to_scrape:
+        md = scrape_url(url)
+        if md:
+            existing_raw[url] = md
+        time.sleep(1)
+
+    # Save ALL raw data (old + new)
+    save_raw(api, existing_raw)
+    print(f"\n  {C.GREEN}✓ Raw data saved — won't need Firecrawl for these pages again{C.RESET}")
+
+    all_markdown = ""
+    for url in source['urls']:
+        if url in existing_raw:
+            all_markdown += f"\n\n--- SOURCE: {url} ---\n\n{existing_raw[url]}"
+    return all_markdown
 
 
 def parse_scraped_docs(markdown: str, api_name: str) -> dict:
@@ -102,30 +175,16 @@ Documentation:
 
 
 def scrape_api_docs(api: str) -> dict:
-    """Scrape all doc pages for an API, parse them, save to disk."""
+    """Full pipeline: get raw markdown → parse with Groq → save docs.json."""
     source = API_SOURCES.get(api)
     if not source:
         return {}
 
-    if not FIRECRAWL_API_KEY:
-        print(f"\n  {C.RED}✗ FIRECRAWL_API_KEY not set{C.RESET}")
-        print(f"  Need it to scrape {source['name']} docs.")
-        print(f"  Get a free key: {C.CYAN}https://firecrawl.dev{C.RESET}")
-        print(f"  Add to .env: FIRECRAWL_API_KEY=fc-your_key\n")
-        return {}
+    print(f"\n  {C.BOLD}📡 First time using {source['name']} — building docs...{C.RESET}")
+    print(f"  {C.DIM}This only happens once. Results are saved for next time.{C.RESET}")
 
-    print(f"\n  {C.BOLD}📡 First time using {source['name']} — scraping docs...{C.RESET}")
-    print(f"  {C.DIM}This only happens once. Results are saved for next time.{C.RESET}\n")
-
-    all_markdown = ""
-    for url in source['urls']:
-        md = scrape_url(url)
-        if md:
-            all_markdown += f"\n\n--- SOURCE: {url} ---\n\n{md}"
-        time.sleep(1)
-
+    all_markdown = fetch_raw_markdown(api)
     if not all_markdown:
-        print(f"  {C.RED}✗ Could not scrape any pages{C.RESET}")
         return {}
 
     print(f"\n  {C.DIM}Parsing docs with AI...{C.RESET}")
@@ -145,14 +204,18 @@ def scrape_api_docs(api: str) -> dict:
 
 def load_api_docs(api: str) -> dict:
     """
-    Load docs for an API.
-    If data/{api}/docs.json exists and has endpoints → return it.
-    If not → scrape with Firecrawl, save, then return.
+    Load docs for an API. Three-level cache:
+      1. docs.json has endpoints → return instantly
+      2. raw.json exists → re-parse with Groq (no Firecrawl)
+      3. nothing → Firecrawl + Groq
     """
     docs_file = DATA_DIR / api / 'docs.json'
     if docs_file.exists():
-        with open(docs_file) as f:
-            docs = json.load(f)
-        if docs.get('endpoints'):
-            return docs
+        try:
+            with open(docs_file) as f:
+                docs = json.load(f)
+            if docs.get('endpoints'):
+                return docs
+        except (json.JSONDecodeError, ValueError):
+            pass
     return scrape_api_docs(api)

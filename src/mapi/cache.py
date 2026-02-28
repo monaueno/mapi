@@ -11,8 +11,12 @@ from .config import CACHE_PATH
 
 def load_cache() -> dict:
     if CACHE_PATH.exists():
-        with open(CACHE_PATH) as f:
-            return json.load(f)
+        try:
+            with open(CACHE_PATH) as f:
+                data = json.load(f)
+                return data if isinstance(data, dict) else {}
+        except (json.JSONDecodeError, ValueError):
+            return {}
     return {}
 
 
