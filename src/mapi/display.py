@@ -25,8 +25,8 @@ def print_usage():
   {C.BOLD}Examples:{C.RESET}
     mapi -python gemini generate text
     mapi -javascript googlemaps get directions
-    mapi -curl gemini chat conversation
-    mapi -rust googlemaps geocode address
+    mapi -curl jobnimbus create a contact named Sam
+    mapi -python jn retrieve all jobs
 
   {C.BOLD}Test with your API key:{C.RESET}
     mapi test api_key="YOUR_REAL_KEY"
@@ -34,9 +34,34 @@ def print_usage():
   {C.BOLD}Available APIs:{C.RESET}
     gemini        Google Gemini (text generation, vision, embeddings)
     googlemaps    Google Maps (geocoding, directions, places, distance)
+    jobnimbus     JobNimbus CRM (contacts, jobs, tasks, invoices)  [alias: jn]
 
   {C.BOLD}Any language works:{C.RESET} -python, -javascript, -curl, -rust, -go, -java, etc.
 """)
+
+
+def print_intent(intent):
+    """Show what mapi understood the user wants, and the endpoint it matched."""
+    conf = (intent.get('confidence') or 'medium').lower()
+    conf_color = {'high': C.GREEN, 'medium': C.YELLOW, 'low': C.RED}.get(conf, C.YELLOW)
+
+    understood = intent.get('understood') or ''
+    if understood:
+        print(f"\n  {C.BOLD}Understood:{C.RESET} {understood}")
+
+    method = intent.get('method', '')
+    endpoint = intent.get('endpoint', '')
+    print(f"  {C.BOLD}Matched:{C.RESET}    {C.CYAN}{method} {endpoint}{C.RESET}  "
+          f"{conf_color}[{conf} confidence]{C.RESET}")
+
+    params = intent.get('extracted_params') or {}
+    if params:
+        pairs = ', '.join(f"{k}={v}" for k, v in params.items())
+        print(f"  {C.BOLD}Params:{C.RESET}     {C.DIM}{pairs}{C.RESET}")
+
+    notes = intent.get('notes')
+    if notes:
+        print(f"  {C.DIM}Note: {notes}{C.RESET}")
 
 
 def print_result(code, verification, language, from_cache):

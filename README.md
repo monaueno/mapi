@@ -105,5 +105,4 @@ json
   "code": "import requests\n\ndef send_email(...)",
   "generated_at": "2026-02-28T..."
 }`
-
 One file, always the latest, gets overwritten every time. No history, no complexity.

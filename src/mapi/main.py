@@ -15,12 +15,12 @@ import sys
 
 import httpx
 
-from .config import GROQ_API_KEY, API_SOURCES, DATA_DIR, LAST_RESULT_PATH
+from .config import GROQ_API_KEY, API_SOURCES, DATA_DIR, LAST_RESULT_PATH, resolve_api
 from .cache import load_cache, save_cache
 from .scraper import load_api_docs
-from .generator import ask_groq
+from .generator import ask_groq, resolve_intent
 from .verifier import verify_endpoint
-from .display import C, print_usage, print_result
+from .display import C, print_usage, print_result, print_intent
 
 HTTP_STATUS_TEXT = {
     200: 'OK', 201: 'Created', 204: 'No Content',
@@ -207,7 +207,7 @@ def main():
         return
 
     language = parsed['language']
-    api = parsed['api']
+    api = resolve_api(parsed['api'])
     query = parsed['query']
 
     # ── Check Groq key ──────────────────────────────────────────────
@@ -239,22 +239,34 @@ def main():
         print(f"  Make sure FIRECRAWL_API_KEY is set in .env\n")
         return
 
-    # ── Step 3: Generate code with Groq ─────────────────────────────
-    print(f"\n  {C.DIM}Generating {language} code for: {api} → {query}...{C.RESET}")
-    code = ask_groq(language, query, docs)
+    # ── Step 3: Understand the request → resolve the best endpoint ───
+    print(f"\n  {C.DIM}Understanding: {api} → {query}...{C.RESET}")
+    intent = resolve_intent(query, docs)
+    if intent:
+        print_intent(intent)
+
+    # ── Step 4: Generate code with Groq (focused on resolved endpoint)
+    print(f"  {C.DIM}Generating {language} code...{C.RESET}")
+    code = ask_groq(language, query, docs, intent=intent)
 
     if code.startswith('Error:'):
         print(f"\n  {C.RED}{code}{C.RESET}\n")
         return
 
-    # ── Step 4: Find endpoint URL in generated code ─────────────────
+    # ── Step 4b: Determine endpoint URL/method ──────────────────────
+    # Prefer the resolved intent (reliable); fall back to matching the
+    # generated code against known endpoints if resolution was skipped.
     endpoint_url = ''
     method = 'GET'
-    for ep in docs['endpoints']:
-        if ep['endpoint'] in code:
-            endpoint_url = ep['endpoint']
-            method = ep['method']
-            break
+    if intent and intent.get('endpoint'):
+        endpoint_url = intent['endpoint']
+        method = intent.get('method', 'GET')
+    else:
+        for ep in docs['endpoints']:
+            if ep['endpoint'] in code:
+                endpoint_url = ep['endpoint']
+                method = ep['method']
+                break
 
     # ── Step 5: Verify the endpoint is real ─────────────────────────
     print(f"  {C.DIM}Verifying endpoint...{C.RESET}")

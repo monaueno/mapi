@@ -1,0 +1,1111 @@
+{
+  "service_name": "JobNimbus Public API",
+  "auth": "Pass API key as header: Authorization: bearer YOUR_API_KEY",
+  "doc_url": "https://documenter.getpostman.com/view/3919598/S11PpG4x",
+  "endpoints": [
+    {
+      "action": "create a contact",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/contacts",
+      "description": "This request allows you to create a new contact within JobNimbus.\nNotes:\n\nFirst Name, Last Name, First &amp; Last Name, Display_Name, or Company Name are required\nrecord_type_name is required and should be a workflow name defined in the customers JobNimbus contact workflow settings\nstatus_name is re",
+      "params": "first_name (body), last_name (body), record_type_name (body), status_name (body), geo (body)",
+      "tags": [
+        "Contacts"
+      ],
+      "example_body": {
+        "first_name": "Sammy G",
+        "last_name": "Kent",
+        "record_type_name": "Customer",
+        "status_name": "Lead",
+        "geo": {
+          "lon": -88.687277,
+          "lat": 37.149574
+        }
+      }
+    },
+    {
+      "action": "update a contact",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/contacts/<jnid>",
+      "description": "This request allows you to update a contact within JobNimbus.\nNotes:\nMandatory field(s): jnid\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required), first_name (body), last_name (body), address_line1 (body), address_line2 (body), city (body), state_text (body), zip (body)",
+      "tags": [
+        "Contacts"
+      ],
+      "example_body": {
+        "first_name": "Clark",
+        "last_name": "Kent",
+        "address_line1": "123 Maple St",
+        "address_line2": "Apt C",
+        "city": "Orlando",
+        "state_text": "FL",
+        "zip": "32806"
+      }
+    },
+    {
+      "action": "delete a contact",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/contacts/<jnid>",
+      "description": "This request allows you to update a contact within JobNimbus.\nNotes:\nMandatory field(s): jnid\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required), is_active (body)",
+      "tags": [
+        "Contacts"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve a contact",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/contacts/<jnid>",
+      "description": "This request allows you to retrieve the information of a specific contact within JobNimbus.\nNotes:\nMandatory field(s): jnid\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Contacts"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all contacts",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/contacts",
+      "description": "This request allows you to retrieve all of the contacts within a JobNimbus account.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response\n\n\n\nRequest Parameters\nRequest parameters should be passed in the query string\nsize - n",
+      "params": "",
+      "tags": [
+        "Contacts"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a job",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/jobs",
+      "description": "This request allows you to create a new job within JobNimbus.\nNotes:\n\nname is required\nrecord_type_name is required and should be a workflow name defined in the customers JobNimbus job workflow settings\nstatus_name is required and should be a status defined within the record_type_name workflow\nsourc",
+      "params": "name (body), record_type_name (body), status_name (body), geo (body), primary (body)",
+      "tags": [
+        "Jobs"
+      ],
+      "example_body": {
+        "name": "Kenny G's Roof",
+        "record_type_name": "Job",
+        "status_name": "Lead",
+        "geo": {
+          "lon": -88.687277,
+          "lat": 37.149574
+        },
+        "primary": {
+          "id": "he2d2"
+        }
+      }
+    },
+    {
+      "action": "update a job",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/jobs/<jnid>",
+      "description": "This request allows you to update a job within JobNimbus.\nNotes:\n\nMandatory field(s): jnid\nAlso see required fields in \"POST Create a Job\"\n\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required), name (body), record_type_name (body), status_name (body), geo (body), primary (body)",
+      "tags": [
+        "Jobs"
+      ],
+      "example_body": {
+        "name": "Kenny G's Roof",
+        "record_type_name": "Job",
+        "status_name": "Lead",
+        "geo": {
+          "lon": -88.687277,
+          "lat": 37.149574
+        },
+        "primary": {
+          "id": "he2d2"
+        }
+      }
+    },
+    {
+      "action": "delete a job",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/jobs/<jnid>",
+      "description": "This request allows you to update a job within JobNimbus.\nNotes:\n\nMandatory field(s): jnid\nAlso see required fields in \"POST Create a Job\"\n\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required), is_active (body)",
+      "tags": [
+        "Jobs"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve a job",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/jobs/<jnid>",
+      "description": "This request allows you to retrieve the information of a specific job within JobNimbus.\nNotes:\nMandatory field(s): jnid\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Jobs"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all jobs",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/jobs",
+      "description": "This request allows you to retrieve all of the jobs within a JobNimbus account.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nRequest Parameters  \nRequest parameters should be passed in the query string\nsize - nu",
+      "params": "",
+      "tags": [
+        "Jobs"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a task",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/tasks",
+      "description": "This request allows you to create a new task within JobNimbus.\nNotes:\n\ntitle and date_start are required\nrecord_type_name is required and should be a task type name defined in the customer's settings.\nrelated.id should be set to the contact or job that this task is related to.\nAlso accepts most of t",
+      "params": "date_start (body), date_end (body), title (body), related (body), record_type (body), record_type_name (body)",
+      "tags": [
+        "Tasks"
+      ],
+      "example_body": {
+        "date_start": 1460131200,
+        "date_end": 0,
+        "title": "Meet with Bob to discuss proposal",
+        "related": [
+          {
+            "id": "imqpqhqpaz5l5l92"
+          }
+        ],
+        "record_type": 4,
+        "record_type_name": "Appointment"
+      }
+    },
+    {
+      "action": "update a task",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/tasks/<jnid>",
+      "description": "This request allows you to update a job within JobNimbus.\nNotes:\n\nMandatory field(s): jnid\nAlso see required fields in \"POST Create a Task\"\n\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required), date_start (body)",
+      "tags": [
+        "Tasks"
+      ],
+      "example_body": {
+        "date_start": 1460134800
+      }
+    },
+    {
+      "action": "delete a task",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/tasks/<jnid>",
+      "description": "This request allows you to update a job within JobNimbus.\nNotes:\n\nMandatory field(s): jnid\nAlso see required fields in \"POST Create a Task\"\n\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required), is_active (body)",
+      "tags": [
+        "Tasks"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve a tasks",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/tasks/<jnid>",
+      "description": "This request allows you to retrieve the information of a specific task within JobNimbus.\nNotes:\nMandatory field(s): jnid\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Tasks"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all tasks",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/tasks",
+      "description": "This request allows you to retrieve all of the tasks within a JobNimbus account.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response\n\nResponse:\nExample of a partial response:\n{\n    \"count\": 117,\n    \"results\": [\n        {",
+      "params": "",
+      "tags": [
+        "Tasks"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create an activity",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/activities",
+      "description": "This request allows you to create a new Activity within JobNimbus.\nNotes:\n\nnote, record_type_name and primary.id should be included.\nAlso accepts most of the fields listed in the \"GET /activities\" response\n\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will incl",
+      "params": "note (body), date_created (body), record_type_name (body), primary (body)",
+      "tags": [
+        "Activities"
+      ],
+      "example_body": {
+        "note": "My new note",
+        "date_created": 1513108061,
+        "record_type_name": "Note",
+        "primary": {
+          "id": "i97"
+        }
+      }
+    },
+    {
+      "action": "retrieve an activity",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/activities/<jnid>",
+      "description": "This request allows you to retrieve the information of a specific activity within JobNimbus.\nNotes:\nMandatory field(s): jnid\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Activities"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all activities",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/activities",
+      "description": "This request allows you to retrieve all of the activities within a JobNimbus account.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response\n\nRequest Parameters\nRequest parameters should be passed in the query string\nsize - n",
+      "params": "",
+      "tags": [
+        "Activities"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a file (deprecated)",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/files",
+      "description": "This request allows you to create a new File attachment within JobNimbus.\nNotes:\n*Data attribute should be base64 encoded, ie. btoa('This is my document text.')\nType: \n\n1=Document \n2=Photo\n3=Email Attachment\n4=naturalForms\n5=Invoice\n6=Eagleview\n7=Accurence\n8=Credit Memo\n\nResponse Codes:\n\nHTTP Status",
+      "params": "data (body), is_private (body), related (body), type (body), subtype (body), filename (body), description (body), date (body), persist (body)",
+      "tags": [
+        "Files"
+      ],
+      "example_body": {
+        "data": "VGhpcyBpcyBteSBuZXcgdGV4dCBkb2N1bWVudC4=",
+        "is_private": false,
+        "related": [
+          "hpzui"
+        ],
+        "type": 1,
+        "subtype": "contact",
+        "filename": "myfilename.txt",
+        "description": "The description of my file.",
+        "date": 1513367467,
+        "persist": true
+      }
+    },
+    {
+      "action": "create a file from url (deprecated)",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/files/fromUrl",
+      "description": "This request allows you to create a new File attachment within JobNimbus.\nNotes:\n\nData attribute should be base64 encoded, ie. btoa('This is my document text.')\n\nType: \n\n1=Document \n\n2=Photo\n\n3=Email Attachment\n\n4=naturalForms\n\n5=Invoice\n\n6=Eagleview\n\n7=Accurence\n\n8=Credit Memo\n\nrelated[] should be",
+      "params": "related (body), type (body), description (body), url (body)",
+      "tags": [
+        "Files"
+      ],
+      "example_body": {
+        "related": [
+          "3pd"
+        ],
+        "type": "Photo",
+        "description": "This is the image description / caption",
+        "url": "https://s3.amazonaws.com/pubfilerepo/Tasks%20List.png"
+      }
+    },
+    {
+      "action": "upload single part file",
+      "method": "POST",
+      "endpoint": "http://api.jobnimbus.com/files/v1/uploads/url",
+      "description": "File Upload Overview\nUploading a file to your JobNimbus account is a 2 part process. You first have to get a Presigned URL that you can then use to PUT your file into the system. There are 2 endpoints to use depending on the size of the file to upload. If the file is &lt;100MB, you should use the si",
+      "params": "",
+      "tags": [
+        "Files"
+      ],
+      "example_body": "{\r\n  \"isPrivate\": (boolean optional),\r\n  \"related\": (string array required),\r\n  \"type\": (number required),\r\n  \"filename\": (string required),\r\n  \"description\": (string optional max length 1000 characters)\r\n}"
+    },
+    {
+      "action": "complete single part upload",
+      "method": "POST",
+      "endpoint": "https://api.jobnimbus.com/files/v1/uploads/:jnid/complete?generateThumbnail=true",
+      "description": "Endpoint Overview\nThis endpoint is used to complete the file upload process for a specific file identified by jnid. It allows you to finalize the upload and optionally generate a thumbnail for the uploaded file.\nRequest Method\nPOST\nRequest URL\nhttps://api.jobnimbus.com/files/v1/uploads/:jnid/complet",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Files"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "upload multipart file",
+      "method": "POST",
+      "endpoint": "http://api.jobnimbus.com/files/v1/uploads/multi-urls",
+      "description": "Endpoint Overview\nThis endpoint allows users to upload multiple URLs to the JobNimbus API. It is designed to facilitate the management of file uploads by associating them with specific resources or entities within the JobNimbus system.\nRequest Method\nPOST\nRequest URL\nhttps://api.jobnimbus.com/files/",
+      "params": "",
+      "tags": [
+        "Files"
+      ],
+      "example_body": "{\r\n    \"partCount\": (number, required),\r\n    \"fileSize\": (number, required),\r\n    \"isPrivate\": (boolean, required),\r\n    \"related\": [\r\n        (array of strings, required)\r\n    ],\r\n    \"type\": (number, required),\r\n    \"filename\": (string, required),\r\n    \"description\": (string, required)\r\n}"
+    },
+    {
+      "action": "complete multipart upload",
+      "method": "POST",
+      "endpoint": "http://api.jobnimbus.com/files/v1/uploads/multi-urls",
+      "description": "Endpoint Overview\nThis endpoint is designed to complete a multi-part file upload process in the JobNimbus API. It allows users to finalize the upload of files that have been previously initiated in multiple parts.\nRequest Method\nPOST\nRequest URL\nhttps://api.jobnimbus.com/files/v1/uploads/:jnid/compl",
+      "params": "",
+      "tags": [
+        "Files"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "abort multipart upload",
+      "method": "POST",
+      "endpoint": "http://api.jobnimbus.com/files/v1/uploads/multi-abort",
+      "description": "Endpoint Overview\nThis endpoint allows users to abort a multi-file upload process. It is particularly useful when there are multiple files being uploaded and the user decides to cancel the operation.\nRequest Method\nPOST\nRequest URL\nhttp://api.jobnimbus.com/files/v1/uploads/multi-abort\nRequest Parame",
+      "params": "",
+      "tags": [
+        "Files"
+      ],
+      "example_body": "{\r\n    \"key\": (string required),\r\n    \"uploadId\": (string required)\r\n}"
+    },
+    {
+      "action": "retrieve list of file attachments",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/files",
+      "description": "This request allows you to retrieve the information of all of the file attachments within a JobNimbus account.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response\n\nResponse:\nExample of a partial response:\n{\n    \"count\": 16",
+      "params": "",
+      "tags": [
+        "Files"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve a file attachment",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/files/<jnid>",
+      "description": "This request allows you to retrieve a file attachments within a JobNimbus account.\nNotes:\nMandatory field(s): jnid\nResponse Codes:\n\nHTTP Status 200 = success.\n\nAnything other status code = failure and will include an error message in the response.",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Files"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a product",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/products",
+      "description": "This request allows you to create a product within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nAdditional Information:\n\nOnly products with names less than 32 characters can be synced with",
+      "params": "name (body), description (body), suppliers (body), location_id (body), is_active (body), tax_exempt (body), extermal_id (body), item_type (body), uoms (body)",
+      "tags": [
+        "Products"
+      ],
+      "example_body": {
+        "name": "Product Name",
+        "description": "Description",
+        "suppliers": [],
+        "location_id": 1,
+        "is_active": true,
+        "tax_exempt": false,
+        "extermal_id": "extermal_id",
+        "item_type": "labor+material",
+        "uoms": [
+          {
+            "uom": "SQ",
+            "material": {
+              "cost": 10,
+              "price": 20
+            },
+            "labor": {
+              "cost": 5,
+              "price": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "action": "update a product",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/products/<jnid>",
+      "description": "This request allows you to update a specific product within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nAdditional Information:\n\nOnly products with names less than 32 characters can be syn",
+      "params": "jnid (path, required), name (body), description (body), suppliers (body), location_id (body), is_active (body), tax_exempt (body), extermal_id (body), item_type (body), uoms (body)",
+      "tags": [
+        "Products"
+      ],
+      "example_body": {
+        "name": "Product Name",
+        "description": "Description",
+        "suppliers": [],
+        "location_id": 1,
+        "is_active": true,
+        "tax_exempt": false,
+        "extermal_id": "extermal_id",
+        "item_type": "labor+material",
+        "uoms": [
+          {
+            "uom": "SQ",
+            "material": {
+              "cost": 10,
+              "price": 20
+            },
+            "labor": {
+              "cost": 5,
+              "price": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "action": "delete a product",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/products/<jnid>",
+      "description": "This request allows you to update a specific product within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nAdditional Information:\n\nOnly products with names less than 32 characters can be syn",
+      "params": "jnid (path, required), is_active (body)",
+      "tags": [
+        "Products"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve a product",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/products/<jnid>",
+      "description": "This request allows you to retrieve a specific product within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Products"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all products",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/products",
+      "description": "This request allows you to retrieve all of the products within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "",
+      "tags": [
+        "Products"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a materialorder",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/materialorders",
+      "description": "POST Create a MaterialOrder",
+      "params": "customer_note (body), esigned (body), external_id (body), internal_note (body), is_active (body), is_archived (body), items (body), location (body), merged (body), owners (body), related (body), sales_rep (body)",
+      "tags": [
+        "MaterialOrders"
+      ],
+      "example_body": {
+        "customer_note": null,
+        "esigned": false,
+        "external_id": null,
+        "internal_note": null,
+        "is_active": true,
+        "is_archived": false,
+        "items": [
+          {
+            "category": "C-012099",
+            "color": null,
+            "cost": 76.56,
+            "description": "",
+            "jnid": "l461ku8xm3tjvhlrz8ft7t9",
+            "name": "Generic 1-1/4\" Coil Roofing",
+            "photos": [],
+            "price": 95.7,
+            "quantity": 1,
+            "sku": "12099",
+            "uom": "CTN"
+          }
+        ],
+        "location": {
+          "id": 1
+        },
+        "merged": null,
+        "owners": [
+          {
+            "id": "l3ja7zg1oin4z1cavfqu9ou"
+          }
+        ],
+        "related": [
+          {
+            "id": "l3w5owqszqj4i0cz5h9hta4",
+            "name": "Dorian Nash",
+            "number": "1507",
+            "type": "contact"
+          }
+        ],
+        "sales_rep": "l3ja7zg1oin4z1cavfqu9ou",
+        "sections": [],
+        "status": 0,
+        "status_name": "Draft",
+        "total_line_item_cost": 76.56,
+        "total_line_item_price": 95.7
+      }
+    },
+    {
+      "action": "update a materialorder",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/materialorders/<jnid>",
+      "description": "PUT Update a MaterialOrder",
+      "params": "jnid (path, required)",
+      "tags": [
+        "MaterialOrders"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "delete a materialorder",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/materialorders/{jnid}",
+      "description": "PUT Delete a MaterialOrder",
+      "params": "jnid (path, required), is_active (body)",
+      "tags": [
+        "MaterialOrders"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve a materialorder",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/materialorders/<jnid>",
+      "description": "This request allows you to retrieve a specific material order within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required)",
+      "tags": [
+        "MaterialOrders"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all materialorders",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/materialorders",
+      "description": "GET Retrieve ALL MaterialOrders",
+      "params": "",
+      "tags": [
+        "MaterialOrders"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a workorder",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/workorders",
+      "description": "This request allows you to create a work order within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "",
+      "tags": [
+        "WorkOrders"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "update a workorder",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/workorders/{id}",
+      "description": "This request allows you to update a specific work order within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "id (path, required)",
+      "tags": [
+        "WorkOrders"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "delete a workorder",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/workorders/{id}",
+      "description": "This request allows you to update a specific work order within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "id (path, required), is_active (body)",
+      "tags": [
+        "WorkOrders"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve a workorder",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/workorders/<jnid>",
+      "description": "This request allows you to retrieve a specific work order within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "jnid (path, required)",
+      "tags": [
+        "WorkOrders"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all workorders",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/workorders",
+      "description": "This request allows you to retrieve all of the work orders within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nQuery Parameters:\n\nfrom: Starting index for pagination (e.g., 10)\n\nsize: Numbe",
+      "params": "",
+      "tags": [
+        "WorkOrders"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create an estimate",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/estimates",
+      "description": "This request allows you to create a new estimate within JobNimbus.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "type (body), date_created (body), date_updated (body), date_estimate (body), external_id (body), number (body), is_active (body), status (body), internal_note (body), related (body), items (body)",
+      "tags": [
+        "Estimates (Legacy)"
+      ],
+      "example_body": {
+        "type": "estimate",
+        "date_created": 1683819562,
+        "date_updated": 1684160281,
+        "date_estimate": 1683781200,
+        "external_id": "993479",
+        "number": "1047",
+        "is_active": true,
+        "status": 1,
+        "internal_note": "Project Estimate",
+        "related": [
+          {
+            "id": "lyu27jrnumcrz2u89k3ydyr",
+            "type": "job"
+          }
+        ],
+        "items": [
+          {
+            "name": "Services",
+            "description": "Test and Troy Coon / SIDING",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 15438.99,
+            "jnid": "lyqi3qx3ee8hvnwh8g53wo9"
+          },
+          {
+            "name": "Services",
+            "description": "Shake siding",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 1303,
+            "jnid": "lyqi3qx3ee8hvnwh8g53wo9"
+          },
+          {
+            "name": "Services",
+            "description": "Remove Lights",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": -349.52,
+            "jnid": "lyqi3qx3ee8hvnwh8g53wo9"
+          }
+        ]
+      }
+    },
+    {
+      "action": "update an estimate",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/estimates/<jnid>",
+      "description": "Update Existing Estimate\nThis endpoint allows you to update an existing Estimate within JobNimbus.\nRequest Body\n\ntype: 'estimate'\n\ndate_created: Timestamp of the creation date\n\ndate_updated: Timestamp of the last update date\n\ndate_estimate: Timestamp of the estimate date\n\njnid: Unique identifier for",
+      "params": "jnid (path, required), type (body), date_created (body), date_updated (body), date_estimate (body), external_id (body), number (body), is_active (body), status (body), internal_note (body), related (body), items (body)",
+      "tags": [
+        "Estimates (Legacy)"
+      ],
+      "example_body": {
+        "type": "estimate",
+        "date_created": 1600000000,
+        "date_updated": 1600000001,
+        "date_estimate": 1600000002,
+        "external_id": "EXT-123456",
+        "number": "INV-001",
+        "is_active": true,
+        "status": 1,
+        "internal_note": "Sample Estimate Note",
+        "related": [
+          {
+            "id": "JOB-123456",
+            "type": "job"
+          }
+        ],
+        "items": [
+          {
+            "name": "Service A",
+            "description": "Description of Service A",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 1000.0,
+            "jnid": "ITEM-123456"
+          },
+          {
+            "name": "Service B",
+            "description": "Description of Service B",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 500.0,
+            "jnid": "ITEM-123456"
+          },
+          {
+            "name": "Discount",
+            "description": "Discount Description",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": -100.0,
+            "jnid": "ITEM-123456"
+          }
+        ]
+      }
+    },
+    {
+      "action": "delete an estimate",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/estimates/<jnid>",
+      "description": "Delete an Existing Estimate\nThis endpoint allows you to update an existing estimate within JobNimbus.\nRequest Body\n\nis_active: Indicates if the estimate is active or not\n\nResponse\nThe response of this request can be documented as a JSON schema. Here is a partial example of the response:\n{    \n  \"is_",
+      "params": "jnid (path, required), is_active (body)",
+      "tags": [
+        "Estimates (Legacy)"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve an estimate",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/estimates/{jnid}",
+      "description": "Retrieve Estimate\nThis endpoint allows you to retrieve a single estimate within a JobNimbus account by providing the estimateID in the URL.\nRequest Body\nThis is a GET request and does not require a request body.\nResponse Body\nThe response will contain the details of the retrieved estimate, including",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Estimates (Legacy)"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all estimates",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/estimates",
+      "description": "Retrieve Estimates\nThis endpoint allows you to retrieve all estimates within a JobNimbus account.\n\nRequest Parameters:\n\nfrom (optional): Starting index for pagination (e.g., 10)\n\nsize (optional): Number of results to return (e.g., 5)\n\n\n\nResponse:\nThe response will contain an array of estimates with",
+      "params": "",
+      "tags": [
+        "Estimates (Legacy)"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create an invoice",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/invoices",
+      "description": "This request allows you to create a new invoice within JobNimbus.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "type (body), date_created (body), date_updated (body), date_invoice (body), date_due (body), external_id (body), number (body), is_active (body), status (body), internal_note (body), related (body), items (body)",
+      "tags": [
+        "Invoices"
+      ],
+      "example_body": {
+        "type": "invoice",
+        "date_created": 1683819562,
+        "date_updated": 1684160281,
+        "date_invoice": 1683781200,
+        "date_due": 1683781200,
+        "external_id": "993479",
+        "number": "1047-795",
+        "is_active": true,
+        "status": 1,
+        "internal_note": "Project Invoice",
+        "related": [
+          {
+            "id": "{jobId}",
+            "type": "job"
+          }
+        ],
+        "items": [
+          {
+            "name": "Services",
+            "description": "Test and Troy Coone / SIDING",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 15438.99,
+            "jnid": "{itemId}"
+          },
+          {
+            "name": "Services",
+            "description": "Shake siding",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 1303,
+            "jnid": "{itemId}"
+          },
+          {
+            "name": "Services",
+            "description": "Remove Lights",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": -349.52,
+            "jnid": "{itemId}"
+          }
+        ]
+      }
+    },
+    {
+      "action": "update an invoice",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/invoices/<jnid>",
+      "description": "This request allows you to update an existing invoice within JobNimbus.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nResponse:\nExample of a partial response:\n{\n    \"type\": \"invoice\",\n    \"external_id\": null,",
+      "params": "jnid (path, required), type (body), date_created (body), date_updated (body), date_invoice (body), date_due (body), external_id (body), number (body), is_active (body), status (body), dummy_status_name (body), dummy_origin (body), internal_note (body)",
+      "tags": [
+        "Invoices"
+      ],
+      "example_body": {
+        "type": "invoice",
+        "date_created": 1600000000,
+        "date_updated": 1600000001,
+        "date_invoice": 1600000002,
+        "date_due": 1600000003,
+        "external_id": "EXT-123456",
+        "number": "INV-001",
+        "is_active": true,
+        "status": 1,
+        "dummy_status_name": "closed",
+        "dummy_origin": "SystemName",
+        "internal_note": "Sample Invoice Note",
+        "related": [
+          {
+            "id": "JOB-123456",
+            "type": "job"
+          }
+        ],
+        "items": [
+          {
+            "name": "Service A",
+            "description": "Description of Service A",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 1000.0,
+            "jnid": "ITEM-123456"
+          },
+          {
+            "name": "Service B",
+            "description": "Description of Service B",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": 500.0,
+            "jnid": "ITEM-123456"
+          },
+          {
+            "name": "Discount",
+            "description": "Discount Description",
+            "uom": "Items",
+            "item_type": "material",
+            "quantity": 1,
+            "price": -100.0,
+            "jnid": "ITEM-123456"
+          }
+        ]
+      }
+    },
+    {
+      "action": "delete an invoice",
+      "method": "PUT",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/invoices/<jnid>",
+      "description": "This request allows you to delete an existing invoice within JobNimbus.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nResponse:\nExample of a partial response:\n{ \n    \"is_active\": false,\n  \"type\": \"invoice\",\n  \"da",
+      "params": "jnid (path, required), is_active (body)",
+      "tags": [
+        "Invoices"
+      ],
+      "example_body": {
+        "is_active": false
+      }
+    },
+    {
+      "action": "retrieve an invoice",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/invoices/<jnid>",
+      "description": "This request allows you to retrieve a single invoice within a JobNimbus account.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nResponse:\nExample of a partial response:\n{\n    \"type\": \"invoice\",\n    \"external_id\":",
+      "params": "jnid (path, required)",
+      "tags": [
+        "Invoices"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all invoices",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/v2/invoices",
+      "description": "This request allows you to retrieve all of the invoices within a JobNimbus account.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\n\nQuery Parameters:\n\nfrom: Starting index for pagination (e.g., 10)\n\nsize: Number of",
+      "params": "",
+      "tags": [
+        "Invoices"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all payments",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/payments",
+      "description": "This request allows you to retrieve all of the work orders within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "",
+      "tags": [
+        "Payments"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a payment",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api2/v2/payments",
+      "description": "This request allows you to create a payment within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nHTTP Status 500 = failure (most likely missing a required field)\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "",
+      "tags": [
+        "Payments"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve all budgets",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/budgets",
+      "description": "This request allows you to retrieve all of the work orders within a JobNimbus account.\n\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response",
+      "params": "",
+      "tags": [
+        "Budgets (Legacy)"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve account settings",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/account/settings",
+      "description": "This request allows you to retrieve the configuration of a JobNimbus account's settings.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response\n\nResponse:\n\nIf a field is passed then the API will return a value in that field f",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve group information",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/account/settings?field=groups",
+      "description": "This request allows you to retrieve the configuration of a JobNimbus account's settings.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\nResponse:\n\nIf a field is passed then the API will return a value in that field",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve users or team members",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/account/users",
+      "description": "This request allows you to retrieve a list of an account's JobNimbus users.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the response\n\nResponse:\nExample of a partial response:\n{\n    \"users\": [\n        {\n            \"first_name\":",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "retrieve uoms",
+      "method": "GET",
+      "endpoint": "https://app.jobnimbus.com/api1/utility/uoms",
+      "description": "This request allows you to retrieve a list of Units of Measurement.\nResponse Codes:\n\nHTTP Status 200 = success\n\nAnything other status code = failure and will include an error message in the response\n\n\nResponse:\nExample of a partial response:\n[\n\"SQ\",\n\"UOM1\",...\n]",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": null
+    },
+    {
+      "action": "create a workflow",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/workflow",
+      "description": "This request allows you to create a new workflow within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the respo",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"name\":\"Customer\", //workflow name, it's required parameter\n    \"object_type\":\"contact\", //workflow object type, it's requied paramter, (valid values: contact, job, workorder)\n    \"is_sub_contractor\": true/false, //optional field (default = false)\n    \"can_access_by_all\": true/false, //optional field (default = false)\n    \"is_vendor\": true/false, //optional field (default = false)\n    \"is_active\": true/false, //optional field (default = true)\n    \"is_supplier\": true/false, //optional field (default = false)\n}"
+    },
+    {
+      "action": "create a status within a workflow",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/workflow/<workflowid>/status",
+      "description": "This request allows you to create a new status within a workflow within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error mess",
+      "params": "workflowid (path, required)",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"name\":\"Lead\", //status name, it's required parameter\n    \"is_lead\": true/false, //optional field (default = false)\n    \"is_closed\": true/false, //optional field (default = false)\n    \"is_archived\": true/false, //optional field (default = false)\n    \"send_to_quickbooks\": true/false, //optional field (default = false)\n    \"force_mobile_sync\": true/false, //optional field (default = false)\n    \"is_active\": true/false, //optional field (default = true)\n}"
+    },
+    {
+      "action": "create a lead source",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/leadsource",
+      "description": "This request allows you to create a new workflow within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the respo",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"SourceName\":\"Google\", //lead source name, it's required parameter\n    \"IsActive\": true/false, //optional field (default = true)\n}"
+    },
+    {
+      "action": "create a custom field",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/customfield",
+      "description": "This request allows you to create a new custom field within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the r",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"title\":\"Claim Number\", //custom field title/UI name, it's required parameter\n    \"object_type\":\"contact\", //object type, it's requied paramter, (valid values: contact, job, workorder)\n    \"type\": \"dropdown\", //custom field type, it's required paramter (valid values: date, double, long, string, boolean, dropdown)\n    \"is_required\": true/false, //optional field (default = false)\n    \"is_currency\": true/false, //optional field (default = false), only valid for field_type = double\n    \"options\": [ \"val1\", \"val2\", \"val3\"] //requited field if field_type is dropdown (all possible options)\n}"
+    },
+    {
+      "action": "create a file type",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/filetype",
+      "description": "This request allows you to create a new file type within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the resp",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"TypeName\":\"Document\", //file type name (attachment category name), it's required parameter\n    \"IsActive\": true/false, //optional field (default = true)\n}"
+    },
+    {
+      "action": "create a task type",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/tasktype",
+      "description": "This request allows you to create a new task type within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the resp",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"TypeName\":\"Task\", //task type name, it's required parameter\n    \"IsActive\": true/false, //optional field (default = true)\n    \"HideFromCalendarView\": true/false, //optional field (default = false)\n    \"HideFromTaskList\": true/false, //optional field (default = false)\n    \"DefaultName\": \"Task Name\" //optional field (default value will be same as name)\n}"
+    },
+    {
+      "action": "create an activity type",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/activitytype",
+      "description": "This request allows you to create a new activity type within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"TypeName\":\"Task\", //task type name, it's required parameter\n    \"IsActive\": true/false, //optional field (default = true)\n    \"HideFromCalendarView\": true/false, //optional field (default = false)\n    \"HideFromTaskList\": true/false, //optional field (default = false)\n    \"DefaultName\": \"Task Name\" //optional field (default value will be same as name)\n}"
+    },
+    {
+      "action": "create a location",
+      "method": "POST",
+      "endpoint": "https://app.jobnimbus.com/api1/account/location",
+      "description": "This request allows you to create a new location within a Jobnimbus account. Note: The token used must have an access profile level with access to the account settings page.\nResponse Codes:\n\nHTTP Status 200 = success\nAnything other status code = failure and will include an error message in the respo",
+      "params": "",
+      "tags": [
+        "Account"
+      ],
+      "example_body": "{\n    \"name\":\"Location Name\", //Location name, it's required parameter\n    \"address_line1\": \"address1\", //optional field\n    \"address_line2\": \"address2\", //optional field\n    \"code\": \"HH\", //optional field\n    \"city\": \"American Fork\", //optional field\n    \"zip\": \"84004\", //optional field\n    \"phone\": \"999-999-9999\", //optional field\n    \"is_active\": true/false, //optional field (default = true)\n}"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "python:generate request": {
+    "code": "import requests\nimport json\n\ndef generate_content():\n    url = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent\"\n    api_key = \"YOUR_API_KEY\"\n    headers = {\n        \"x-goog-api-key\": api_key,\n        \"Content-Type\": \"application/json\"\n    }\n    body = {\n        \"contents\": [\n            {\n                \"parts\": [\n                    {\n                        \"text\": \"Explain how AI works in a few words\"\n                    }\n                ]\n            }\n        ]\n    }\n    response = requests.post(url, headers=headers, data=json.dumps(body))\n    if response.status_code == 200:\n        print(response.text)\n    else:\n        print(f\"Error: {response.status_code}\")\n\ndef stream_generate_content():\n    url = \"https://generativelanguage.googleapis.com/v1beta/models:streamGenerateContent\"\n    api_key = \"YOUR_API_KEY\"\n    headers = {\n        \"x-goog-api-key\": api_key,\n        \"Content-Type\": \"application/json\"\n    }\n    body = {\n        \"model\": \"model-name\",\n        \"prompt\": \"prompt-text\",\n        \"config\": {\n            \"generation_config\": {\n                \"modality\": \"TEXT\",\n                \"speech_config\": {\n                    \"voice_config\": {\n                        \"prebuilt_voice_config\": {\n                            \"voice\": \"VOICE_NAME\"\n                        }\n                    }\n                }\n            }\n        }\n    }\n    response = requests.post(url, headers=headers, data=json.dumps(body), stream=True)\n    if response.status_code == 200:\n        for chunk in response.iter_content(chunk_size=1024):\n            print(chunk.decode(\"utf-8\"), end=\"\")\n    else:\n        print(f\"Error: {response.status_code}\")\n\ngenerate_content()",
+    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent",
+    "verification": {
+      "verified": true,
+      "status": 403,
+      "message": "Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API."
+    }
+  },
+  "python:generate text about cats": {
+    "code": "import requests\nimport json\n\napi_key = \"YOUR_API_KEY\"\nmodel = \"YOUR_MODEL\"\nurl = \"https://generativelanguage.googleapis.com/v1beta/models:streamGenerateContent\"\nheaders = {\n    \"x-goog-api-key\": api_key,\n    \"Content-Type\": \"application/json\"\n}\nbody = {\n    \"model\": model,\n    \"prompt\": \"cats\",\n    \"config\": {\n        \"generation_config\": {\n            \"modality\": \"TEXT\",\n            \"speech_config\": {\n                \"voice_config\": {\n                    \"prebuilt_voice_config\": {\n                        \"voice\": \"VOICE_NAME\"\n                    }\n                }\n            }\n        }\n    }\n}\n\nresponse = requests.post(url, headers=headers, data=json.dumps(body))\nif response.status_code == 200:\n    print(response.text)\nelse:\n    print(f\"Error: {response.status_code}\")",
+    "endpoint": "POST https://generativelanguage.googleapis.com/v1beta/models:streamGenerateContent",
+    "verification": {
+      "verified": false,
+      "status": 404,
+      "message": ""
+    }
+  }
+}

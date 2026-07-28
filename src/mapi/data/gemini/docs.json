@@ -1,0 +1,48 @@
+{
+  "service_name": "Google Gemini API",
+  "auth": "Pass API key as header: x-goog-api-key: YOUR_API_KEY",
+  "doc_url": "https://ai.google.dev/gemini-api/docs/quickstart",
+  "endpoints": [
+    {
+      "action": "generate content",
+      "method": "POST",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent",
+      "description": "Generate content using the Gemini API",
+      "params": "model (required), contents (required)",
+      "example_body": {
+        "contents": [
+          {
+            "parts": [
+              {
+                "text": "Explain how AI works in a few words"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "action": "stream generate text content",
+      "method": "POST",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models:streamGenerateContent",
+      "description": "Stream generate content based on a given prompt and configuration. The API returns a stream of responses with the generated content and additional metadata.",
+      "params": "model (required), prompt (required), config (optional)",
+      "example_body": {
+        "model": "model-name",
+        "prompt": "prompt-text",
+        "config": {
+          "generation_config": {
+            "modality": "TEXT",
+            "speech_config": {
+              "voice_config": {
+                "prebuilt_voice_config": {
+                  "voice": "VOICE_NAME"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

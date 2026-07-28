@@ -181,6 +181,11 @@ def scrape_api_docs(api: str) -> dict:
     if not source:
         return {}
 
+    # Postman-published APIs: pull the collection JSON instead of Firecrawl.
+    if source.get('postman_url'):
+        from .postman import load_docs_from_postman
+        return load_docs_from_postman(api)
+
     print(f"\n  {C.BOLD}📡 First time using {source['name']} — building docs...{C.RESET}")
     print(f"  {C.DIM}This only happens once. Results are saved for next time.{C.RESET}\n")
 

@@ -1,0 +1,38 @@
+{
+  "curl:create a contact named Sam Kent": {
+    "code": "curl -X POST \\\n  https://app.jobnimbus.com/api1/contacts \\\n  -H 'Authorization: bearer YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"first_name\": \"Sam\", \"last_name\": \"Kent\", \"record_type_name\": \"Customer\", \"status_name\": \"Lead\", \"geo\": {\"lon\": -88.687277, \"lat\": 37.149574}}'",
+    "endpoint": "POST https://app.jobnimbus.com/api1/contacts",
+    "verification": {
+      "verified": true,
+      "status": 401,
+      "message": "{'status': 401, 'body': 'Authentication required'}"
+    }
+  },
+  "python:pull up all my jobs": {
+    "code": "import requests\n\nurl = \"https://app.jobnimbus.com/api1/jobs\"\nheaders = {\"Authorization\": \"bearer YOUR_API_KEY\"}\nresponse = requests.get(url, headers=headers)\n\nif response.status_code == 200:\n    print(response.text)\nelse:\n    print(\"Error:\", response.status_code)\n    print(response.text)",
+    "endpoint": "GET https://app.jobnimbus.com/api1/jobs",
+    "verification": {
+      "verified": true,
+      "status": 401,
+      "message": "{'status': 401, 'body': 'Authentication required'}"
+    }
+  },
+  "python:find alex in contact": {
+    "code": "import requests\n\njnid = \"YOUR_ID\"\nurl = f\"https://app.jobnimbus.com/api1/contacts/{jnid}\"\nheaders = {\"Authorization\": f\"bearer YOUR_API_KEY\"}\n\nresponse = requests.get(url, headers=headers)\n\nif response.status_code == 200:\n    print(response.text)\nelse:\n    print(f\"Failed with status code {response.status_code}: {response.text}\")",
+    "endpoint": "GET https://app.jobnimbus.com/api1/contacts/<jnid>",
+    "verification": {
+      "verified": true,
+      "status": 401,
+      "message": "{'status': 401, 'body': 'Authentication required'}"
+    }
+  },
+  "javascript:make new contact": {
+    "code": "const axios = require('axios');\n\nconst apiKey = 'YOUR_API_KEY';\nconst url = 'https://app.jobnimbus.com/api1/contacts';\nconst body = {\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"record_type_name\": \"\",\n  \"status_name\": \"\",\n  \"geo\": {\n    \"lon\": 0,\n    \"lat\": 0\n  }\n};\n\naxios.post(url, body, {\n  headers: {\n    Authorization: `bearer ${apiKey}`\n  }\n})\n.then(response => {\n  if (response.status === 201) {\n    console.log(response.data);\n  } else {\n    console.log(`Error: ${response.status}`);\n  }\n})\n.catch(error => {\n  console.log(`Error: ${error.message}`);\n});",
+    "endpoint": "POST https://app.jobnimbus.com/api1/contacts",
+    "verification": {
+      "verified": true,
+      "status": 401,
+      "message": "{'status': 401, 'body': 'Authentication required'}"
+    }
+  }
+}
