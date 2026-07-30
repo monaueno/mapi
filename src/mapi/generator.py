@@ -279,15 +279,31 @@ Rules:
 7. If the endpoint has an example_body, use that EXACT JSON structure in the request. Substitute the user's query and any extracted params into the relevant fields but keep the nesting identical.
 8. JSON strings and request bodies must be valid JSON with no comments or trailing content.
 9. Substitute any extracted parameter values (ids, names, dates) into the URL path and body where they belong. Replace placeholders like <jnid>, :id, or {{id}} with the real value when provided, otherwise leave a clear YOUR_ID placeholder.
-10. For curl/bash: do NOT pipe curl output through anything. No | pipes, no -w flag, no subshells. Just a plain curl command that prints the response to stdout."""
+10. GROUNDING — only use parameters that are actually documented for this endpoint. Use the exact names listed in "query_params" / "params" / "example_body". Do NOT invent parameters (e.g. do not guess "updated_after" or "page" if they are not listed). If a capability the user asked for is not documented, do not fabricate a parameter for it.
+11. FILTERING — if the user asks to filter by date/range/status and the endpoint documents a "filter" query parameter, use THAT exact mechanism. For JobNimbus that means a URL-encoded JSON object like filter={{"must":[{{"range":{{"date_updated":{{"gte":<epoch>}}}}}}]}}. Follow the documented filter syntax; do not substitute a made-up query key.
+12. PAGINATION — use only the documented pagination params (e.g. "from" and "size" when listed). Do not use "page" unless it is explicitly documented.
+13. For curl/bash: do NOT pipe curl output through anything. No | pipes, no -w flag, no subshells. Just a plain curl command that prints the response to stdout."""
 
     if intent and intent.get('endpoint'):
         chosen = docs['endpoints'][intent['id']]
+        # Focused view for request generation: the fields needed to build the
+        # call (incl. documented query_params + the filter syntax that lives in
+        # the description). example_response is omitted here — the generator
+        # builds requests, not responses — to keep the token budget lean.
+        gen_view = {
+            'action': chosen.get('action'),
+            'method': chosen.get('method'),
+            'endpoint': chosen.get('endpoint'),
+            'description': (chosen.get('description') or '')[:1500],
+            'params': chosen.get('params', ''),
+            'query_params': chosen.get('query_params', []),
+            'example_body': chosen.get('example_body'),
+        }
         user_msg = f"""API: {docs['service_name']}
 Auth: {docs.get('auth', 'See documentation')}
 
 Use THIS endpoint (already resolved from the user's request):
-{json.dumps(chosen, indent=2)}
+{json.dumps(gen_view, indent=2)}
 
 What the user wants: {intent.get('understood') or query}
 Original request: {query}
@@ -297,7 +313,10 @@ Language: {language}
 IMPORTANT:
 - Use the EXACT auth method described above. Do not use Authorization: Bearer unless the auth info says so.
 - Use the endpoint URL and method exactly as given. Substitute extracted params into the path/body.
+- The endpoint's "query_params" list is the ONLY set of query parameters this endpoint accepts. Use those exact names (e.g. from, size, filter, sort_field). Do not invent others.
+- If the request implies filtering by date/range/status, use the documented "filter" parameter and its exact JSON syntax — never a fabricated key like updated_after.
 - If the endpoint has an "example_body", use that exact JSON structure as the request body. Do not flatten or simplify it.
+- "example_response" (if present) shows what the API returns — use it only to understand the shape; do not print or hardcode it.
 Return ONLY the {language} code. Nothing else."""
     else:
         # Fallback (intent resolution unavailable): send a compact, body-free
