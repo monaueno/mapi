@@ -143,7 +143,7 @@
     {
       "action": "send a review request to a customer",
       "method": "POST",
-      "endpoint": "https://api.trydrumroll.com/api/review-requests",
+      "endpoint": "https://app.trydrumroll.com/api/review-requests",
       "description": "Drumroll generates the tracked link and handles reminders. The company is derived from the authenticated user's token (never the body). The company must have a Google Place ID configured, or the request is rejected 400.",
       "params": "customerName (body), customerPhone (body), customerEmail (body), employee (body), job (body), followUps (body), linkDestination (body)",
       "query_params": [],

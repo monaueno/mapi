@@ -133,12 +133,17 @@ def _content_json(container: dict, spec: dict):
     return None
 
 
+def _base_of(servers) -> str:
+    """First server URL from a `servers` list, trailing slash trimmed."""
+    if servers and isinstance(servers[0], dict):
+        return (servers[0].get('url') or '').rstrip('/')
+    return ''
+
+
 def convert_openapi_to_docs(spec: dict, *, service_name: str, auth: str,
                             doc_url: str) -> dict:
     """Convert an OpenAPI 3 / Swagger dict into mapi docs.json shape."""
-    servers = spec.get('servers') or []
-    base = (servers[0].get('url') if servers and isinstance(servers[0], dict) else '') or ''
-    base = base.rstrip('/')
+    base = _base_of(spec.get('servers') or [])
     schemes = (spec.get('components', {}) or {}).get('securitySchemes', {}) or {}
     global_sec = spec.get('security')
     methods = ('get', 'post', 'put', 'patch', 'delete')
@@ -148,11 +153,15 @@ def convert_openapi_to_docs(spec: dict, *, service_name: str, auth: str,
         if not isinstance(ops, dict):
             continue
         shared = ops.get('parameters', []) if isinstance(ops.get('parameters'), list) else []
+        # OpenAPI lets a path item (and operation) override the root server.
+        path_base = _base_of(ops.get('servers') or [])
         for method, op in ops.items():
             if method not in methods or not isinstance(op, dict):
                 continue
 
-            url = f"{base}{path}"
+            # Precedence: operation-level > path-level > root server.
+            op_base = _base_of(op.get('servers') or []) or path_base or base
+            url = f"{op_base}{path}"
             summary = (op.get('summary') or '').strip()
             action = summary.lower() if summary else f"{method} {path.strip('/').split('/')[-1] or path}"
             description = (op.get('description') or summary or '').strip()[:MAX_DESC_CHARS]
