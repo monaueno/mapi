@@ -72,19 +72,59 @@ def _fill(template, values: dict):
     return template
 
 
+def _lookup_var(name: str, variables: dict):
+    """Find a var for a field name, tolerating the Id-suffix convention.
+
+    Path params use the id form (employeeId, companyId) while request bodies
+    use the bare noun (employee, company). So a field 'employee' should match a
+    provided 'employeeId', and vice versa.
+    """
+    candidates = [name, name + 'Id']
+    stripped = re.sub(r'Id$', '', name)
+    if stripped != name:
+        candidates.append(stripped)
+    for c in candidates:
+        v = variables.get(c)
+        if v not in (None, ''):
+            return v
+    return None
+
+
 def _sub_path(url: str, variables: dict):
     """Substitute {name}/<name>/:name path params; report any that are missing."""
     missing = []
 
     def repl(m):
         name = m.group(1) or m.group(2) or m.group(3)
-        if name in variables and variables[name] not in (None, ''):
-            return str(variables[name])
+        v = _lookup_var(name, variables)
+        if v not in (None, ''):
+            return str(v)
         missing.append(name)
         return m.group(0)
 
     filled = re.sub(r'\{(\w+)\}|<(\w+)>|:(\w+)\b', repl, url)
     return filled, missing
+
+
+def _fill_body(body, variables):
+    """Substitute provided vars into a request body by field name.
+
+    Uses the same Id-suffix tolerance as paths, so passing employeeId=… fills
+    the body's 'employee' field — write tests then use real ids instead of the
+    spec's placeholder values (e.g. "employee": "string").
+    """
+    if isinstance(body, dict):
+        out = {}
+        for k, v in body.items():
+            if isinstance(v, (dict, list)):
+                out[k] = _fill_body(v, variables)
+            else:
+                sub = _lookup_var(k, variables)
+                out[k] = sub if sub is not None else v
+        return out
+    if isinstance(body, list):
+        return [_fill_body(x, variables) for x in body]
+    return body
 
 
 def _auth_headers(auth_str: str, token: str, is_write: bool) -> dict:
@@ -226,7 +266,7 @@ def run_testall(api: str, cli_vars: dict, include_writes: bool):
             continue
 
         headers = _auth_headers(ep.get('auth', docs.get('auth', '')), token, is_write)
-        body = ep.get('example_body') if is_write else None
+        body = _fill_body(ep.get('example_body'), variables) if is_write else None
 
         try:
             resp = httpx.request(method, url, headers=headers,
