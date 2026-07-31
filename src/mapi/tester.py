@@ -170,13 +170,16 @@ def _auth_headers(auth_str: str, token: str, is_write: bool) -> dict:
 
 
 def _prompt(label: str, default=None):
-    """Ask for a value. Enter keeps the default (shown in [brackets]) or, when
-    there is no default, returns None so the caller can skip."""
-    suffix = f" [{default}]" if default not in (None, '') else ""
+    """Ask for a value. Enter keeps the current default, or (when there is no
+    default) returns None so the caller can skip."""
+    suffix = f" {C.DIM}(current: {default}, Enter=keep){C.RESET}" if default not in (None, '') else ""
     try:
         raw = input(f"      {label}{suffix}: ").strip()
     except EOFError:
         return default
+    # Defensive: users sometimes copy the shown value with its brackets.
+    if raw.startswith('[') and raw.endswith(']') and ',' not in raw and len(raw) > 1:
+        raw = raw[1:-1].strip()
     return default if raw == '' else raw
 
 
@@ -389,11 +392,22 @@ def run_testall(api: str, cli_vars: dict, include_writes: bool,
                                  json=body if body is not None else None, timeout=20.0)
             status = resp.status_code
         except Exception as e:
-            report(_status_line(0, str(e)[:40]))
+            report(_status_line(0, str(e)[:60]))
             failed += 1
             continue
 
-        report(_status_line(status))
+        # On failure, surface WHY (the API's error message) instead of a bare code.
+        note = ''
+        if not (200 <= status < 300):
+            try:
+                j = resp.json()
+                err = j.get('error') or j.get('message') or j
+                note = (err.get('message') if isinstance(err, dict) else str(err))
+            except Exception:
+                note = resp.text[:120]
+            note = ' '.join(str(note).split())[:120]
+
+        report(_status_line(status, note))
         if 200 <= status < 300:
             passed += 1
         else:
