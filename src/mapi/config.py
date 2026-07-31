@@ -68,6 +68,15 @@ API_SOURCES = {
         "openapi_url": "https://try-drumroll.mintlify.app/docs/drumroll-openapi.yaml",
         "doc_url": "https://try-drumroll.mintlify.app/api-reference",
         "urls": [],
+        # Live end-to-end testing: how to log in and what to capture.
+        "login": {
+            "method": "POST",
+            "endpoint": "https://api.trydrumroll.com/authentications",
+            "credential_fields": ["email", "password"],
+            "body": {"email": "{email}", "password": "{password}"},
+            "token_field": "token",          # response field holding the JWT
+            "save_vars": {"userId": "user"},  # reuse the returned user id as a path param
+        },
     },
 }
 

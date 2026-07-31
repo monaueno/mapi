@@ -42,6 +42,40 @@ def parse_args(args):
                 return {'command': 'test', 'api_key': arg.split('=', 1)[1].strip('"').strip("'")}
         return {'error': 'test_usage'}
 
+    # mapi login <api> email=… password=…
+    if args[0] == 'login':
+        api = None
+        creds = {}
+        for a in args[1:]:
+            if '=' in a:
+                k, v = a.split('=', 1)
+                creds[k] = v.strip('"').strip("'")
+            elif api is None:
+                api = a.lower()
+        if not api or not creds:
+            return {'error': 'login_usage'}
+        return {'command': 'login', 'api': api, 'creds': creds}
+
+    # mapi testall <api> [key=val …] [writes=yes]
+    if args[0] == 'testall':
+        api = None
+        variables = {}
+        writes = False
+        for a in args[1:]:
+            if '=' in a:
+                k, v = a.split('=', 1)
+                if k == 'writes':
+                    writes = v.strip().lower() in ('yes', 'true', '1')
+                else:
+                    variables[k] = v.strip('"').strip("'")
+            elif a in ('--writes', '--write'):
+                writes = True
+            elif api is None:
+                api = a.lower()
+        if not api:
+            return {'error': 'testall_usage'}
+        return {'command': 'testall', 'api': api, 'vars': variables, 'writes': writes}
+
     # mapi help
     if args[0] in ('help', '--help', '-h'):
         return {'error': 'usage'}
@@ -197,6 +231,10 @@ def main():
     if 'error' in parsed:
         if parsed['error'] == 'test_usage':
             print(f"\n  {C.RED}Usage: mapi test api_key=\"YOUR_KEY\"{C.RESET}\n")
+        elif parsed['error'] == 'login_usage':
+            print(f"\n  {C.RED}Usage: mapi login <api> email=\"…\" password=\"…\"{C.RESET}\n")
+        elif parsed['error'] == 'testall_usage':
+            print(f"\n  {C.RED}Usage: mapi testall <api> [key=val …] [writes=yes]{C.RESET}\n")
         else:
             print_usage()
         return
@@ -204,6 +242,17 @@ def main():
     # ── Handle test command ─────────────────────────────────────────
     if parsed.get('command') == 'test':
         run_test(parsed['api_key'])
+        return
+
+    # ── Handle live login / testall commands ────────────────────────
+    if parsed.get('command') == 'login':
+        from .tester import do_login
+        do_login(resolve_api(parsed['api']), parsed['creds'])
+        return
+
+    if parsed.get('command') == 'testall':
+        from .tester import run_testall
+        run_testall(resolve_api(parsed['api']), parsed['vars'], parsed['writes'])
         return
 
     language = parsed['language']
