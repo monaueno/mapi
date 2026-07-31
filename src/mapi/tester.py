@@ -13,6 +13,7 @@ which documented endpoints actually work.
 """
 import json
 import re
+import sys
 import time
 
 import httpx
@@ -45,6 +46,28 @@ def load_auth(api: str) -> dict:
 def save_auth(api: str, data: dict):
     with open(_auth_path(api), 'w') as f:
         json.dump(data, f, indent=2)
+
+
+def _last_test_path(api: str):
+    return DATA_DIR / api / 'last_test.json'
+
+
+def load_last_test(api: str) -> dict:
+    p = _last_test_path(api)
+    if p.exists():
+        try:
+            with open(p) as f:
+                data = json.load(f)
+                return data if isinstance(data, dict) else {}
+        except (json.JSONDecodeError, ValueError):
+            pass
+    return {}
+
+
+def save_last_test(api: str, variables: dict):
+    keep = {k: v for k, v in variables.items() if v not in (None, '')}
+    with open(_last_test_path(api), 'w') as f:
+        json.dump(keep, f, indent=2)
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -146,6 +169,59 @@ def _auth_headers(auth_str: str, token: str, is_write: bool) -> dict:
     return headers
 
 
+def _prompt(label: str, default=None):
+    """Ask for a value. Enter keeps the default (shown in [brackets]) or, when
+    there is no default, returns None so the caller can skip."""
+    suffix = f" [{default}]" if default not in (None, '') else ""
+    try:
+        raw = input(f"      {label}{suffix}: ").strip()
+    except EOFError:
+        return default
+    return default if raw == '' else raw
+
+
+def _confirm(question: str, default: bool = False) -> bool:
+    try:
+        raw = input(f"  {question} ").strip().lower()
+    except EOFError:
+        return default
+    if raw == '':
+        return default
+    return raw in ('y', 'yes')
+
+
+def _prompt_body(body, variables):
+    """Interactively fill a write body: each field pre-filled with the known var
+    or the spec's example as the default; Enter keeps it. Typed overrides are
+    remembered in `variables` so they show up in next run's editable list."""
+    filled = _fill_body(body, variables)
+    if not isinstance(filled, dict):
+        return filled
+    print(f"      {C.DIM}(Enter keeps the shown default; type to override){C.RESET}")
+    out = {}
+    for k, v in filled.items():
+        if isinstance(v, (dict, list)):
+            out[k] = v  # nested values already had vars substituted
+            continue
+        entered = _prompt(k, default=v)
+        out[k] = entered
+        if entered not in (None, '') and entered != v:
+            variables[k] = entered
+    return out
+
+
+def _review_saved_fields(saved: dict) -> dict:
+    """Show saved fields as an editable list; Enter keeps each, type to change,
+    a lone '-' drops the field. Returns the edited set."""
+    print(f"\n  {C.BOLD}Last saved fields{C.RESET} {C.DIM}(Enter keeps, type to change, '-' removes){C.RESET}")
+    edited = {}
+    for k, v in saved.items():
+        nv = _prompt(k, default=v)
+        if nv not in (None, '', '-'):
+            edited[k] = nv
+    return edited
+
+
 def _status_line(status: int, note: str = '') -> str:
     tail = f"  {C.DIM}{note}{C.RESET}" if note else ''
     if status == 0:
@@ -214,7 +290,8 @@ def do_login(api: str, creds: dict):
 
 
 # ── testall ─────────────────────────────────────────────────────────
-def run_testall(api: str, cli_vars: dict, include_writes: bool):
+def run_testall(api: str, cli_vars: dict, include_writes: bool,
+                interactive=None, use_last=False):
     source = API_SOURCES.get(api, {})
     docs = load_api_docs(api)
     if not docs or not docs.get('endpoints'):
@@ -223,9 +300,24 @@ def run_testall(api: str, cli_vars: dict, include_writes: bool):
 
     auth = load_auth(api)
     token = auth.get('token')
-    variables = {**auth.get('vars', {}), **cli_vars}
     login_endpoint = (source.get('login') or {}).get('endpoint')
     base_url = docs.get('base_url', '')
+    # Prompt for missing values only when we actually have a terminal.
+    if interactive is None:
+        interactive = sys.stdin.isatty()
+
+    # Assemble the working vars. Precedence (low → high):
+    #   last saved test  →  current login  →  explicit CLI args.
+    variables = {}
+    saved = load_last_test(api)
+    if saved:
+        if interactive:
+            if _confirm(f"Use last saved fields? [Y/n]", default=True):
+                variables.update(_review_saved_fields(saved))
+        elif use_last:
+            variables.update(saved)
+    variables.update(auth.get('vars', {}))
+    variables.update(cli_vars)
 
     if not token:
         print(f"\n  {C.YELLOW}⚠ Not logged in. Run: {C.CYAN}mapi login {api} …{C.RESET}")
@@ -234,6 +326,8 @@ def run_testall(api: str, cli_vars: dict, include_writes: bool):
     print(f"\n  {C.BOLD}Testing {docs['service_name']} — {len(docs['endpoints'])} endpoints{C.RESET}")
     if variables:
         print(f"  {C.DIM}vars: {', '.join(f'{k}={v}' for k, v in variables.items())}{C.RESET}")
+    if interactive:
+        print(f"  {C.DIM}Interactive: enter values when asked; blank skips that endpoint.{C.RESET}")
     print()
 
     passed = failed = skipped = 0
@@ -244,44 +338,69 @@ def run_testall(api: str, cli_vars: dict, include_writes: bool):
         tag = f"  {method:5} {label[:48]:48}"
         is_write = method in WRITE_METHODS
 
+        # Interactive: print the endpoint header once; prompts + result sit under
+        # it. Non-interactive: header and result share one line (via report()).
+        if interactive:
+            print(tag)
+
+        def report(result: str):
+            print(f"      → {result}" if interactive else f"{tag} {result}")
+
         # The login endpoint is validated by `mapi login`; don't re-fire it.
         if login_endpoint and raw_url == login_endpoint:
             if token:
-                print(f"{tag} {C.GREEN}200 ✓{C.RESET}  {C.DIM}validated via `mapi login`{C.RESET}")
+                report(f"{C.GREEN}200 ✓{C.RESET}  {C.DIM}validated via `mapi login`{C.RESET}")
                 passed += 1
             else:
-                print(f"{tag} {C.DIM}skip  run `mapi login` to test{C.RESET}")
+                report(f"{C.DIM}skip — run `mapi login` to test{C.RESET}")
                 skipped += 1
             continue
 
+        # Resolve path params, prompting for any we don't know yet.
         url, missing = _sub_path(raw_url, variables)
+        if missing and interactive:
+            for name in list(missing):
+                val = _prompt(name)
+                if val:
+                    variables[name] = val
+            url, missing = _sub_path(raw_url, variables)
         if missing:
-            print(f"{tag} {C.DIM}skip{C.RESET}  {C.DIM}missing {', '.join(missing)} (pass {missing[0]}=…){C.RESET}")
+            hint = '' if interactive else f" (pass {missing[0]}=…)"
+            report(f"{C.DIM}skip — missing {', '.join(missing)}{hint}{C.RESET}")
             skipped += 1
             continue
 
+        # Writes have side effects — gate them (confirm interactively, else opt-in).
         if is_write and not include_writes:
-            print(f"{tag} {C.DIM}skip{C.RESET}  {C.DIM}write — add writes=yes to include{C.RESET}")
-            skipped += 1
-            continue
+            if not (interactive and _confirm(f"{C.YELLOW}{method} is a write — run it? [y/N]{C.RESET}")):
+                hint = '' if interactive else " (add writes=yes)"
+                report(f"{C.DIM}skip — write{hint}{C.RESET}")
+                skipped += 1
+                continue
 
         headers = _auth_headers(ep.get('auth', docs.get('auth', '')), token, is_write)
-        body = _fill_body(ep.get('example_body'), variables) if is_write else None
+        if is_write:
+            body = _prompt_body(ep.get('example_body'), variables) if interactive else _fill_body(ep.get('example_body'), variables)
+        else:
+            body = None
 
         try:
             resp = httpx.request(method, url, headers=headers,
                                  json=body if body is not None else None, timeout=20.0)
             status = resp.status_code
         except Exception as e:
-            print(f"{tag} {_status_line(0, str(e)[:40])}")
+            report(_status_line(0, str(e)[:40]))
             failed += 1
             continue
 
-        print(f"{tag} {_status_line(status)}")
+        report(_status_line(status))
         if 200 <= status < 300:
             passed += 1
         else:
             failed += 1
+
+    # Remember the fields for next time's "use last saved fields?" prompt.
+    save_last_test(api, variables)
 
     print(f"\n  {C.BOLD}Summary:{C.RESET} "
           f"{C.GREEN}{passed} passed{C.RESET}, "

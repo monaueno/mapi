@@ -7,3 +7,4 @@ build/
 src/mapi/data/last_result.json
 .DS_Store
 src/mapi/data/*/auth.json
+src/mapi/data/*/last_test.json

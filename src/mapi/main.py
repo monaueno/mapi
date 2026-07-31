@@ -56,25 +56,34 @@ def parse_args(args):
             return {'error': 'login_usage'}
         return {'command': 'login', 'api': api, 'creds': creds}
 
-    # mapi testall <api> [key=val …] [writes=yes]
+    # mapi testall <api> [key=val …] [writes=yes] [last] [--no-prompt]
     if args[0] == 'testall':
         api = None
         variables = {}
         writes = False
+        use_last = False
+        interactive = None  # auto-detect from TTY
         for a in args[1:]:
             if '=' in a:
                 k, v = a.split('=', 1)
                 if k == 'writes':
                     writes = v.strip().lower() in ('yes', 'true', '1')
+                elif k == 'prompt':
+                    interactive = v.strip().lower() in ('yes', 'true', '1')
                 else:
                     variables[k] = v.strip('"').strip("'")
             elif a in ('--writes', '--write'):
                 writes = True
+            elif a in ('last', '--last'):
+                use_last = True
+            elif a in ('--no-prompt', '--yes'):
+                interactive = False
             elif api is None:
                 api = a.lower()
         if not api:
             return {'error': 'testall_usage'}
-        return {'command': 'testall', 'api': api, 'vars': variables, 'writes': writes}
+        return {'command': 'testall', 'api': api, 'vars': variables,
+                'writes': writes, 'use_last': use_last, 'interactive': interactive}
 
     # mapi help
     if args[0] in ('help', '--help', '-h'):
@@ -252,7 +261,8 @@ def main():
 
     if parsed.get('command') == 'testall':
         from .tester import run_testall
-        run_testall(resolve_api(parsed['api']), parsed['vars'], parsed['writes'])
+        run_testall(resolve_api(parsed['api']), parsed['vars'], parsed['writes'],
+                    interactive=parsed.get('interactive'), use_last=parsed.get('use_last', False))
         return
 
     language = parsed['language']
