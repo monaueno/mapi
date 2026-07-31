@@ -181,6 +181,11 @@ def scrape_api_docs(api: str) -> dict:
     if not source:
         return {}
 
+    # OpenAPI-specced APIs: convert the spec straight to docs.json.
+    if source.get('openapi_url'):
+        from .openapi import load_docs_from_openapi
+        return load_docs_from_openapi(api)
+
     # Postman-published APIs: pull the collection JSON instead of Firecrawl.
     if source.get('postman_url'):
         from .postman import load_docs_from_postman

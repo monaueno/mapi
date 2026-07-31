@@ -60,12 +60,22 @@ API_SOURCES = {
         "doc_url": "https://documenter.getpostman.com/view/3919598/S11PpG4x",
         "urls": [],
     },
+    "drumroll": {
+        "name": "Drumroll API",
+        # Most REST endpoints use a raw JWT (no 'Bearer' prefix); a couple use
+        # Bearer. Per-endpoint auth is captured from the spec's security schemes.
+        "auth": "Pass JWT as header: Authorization: YOUR_API_KEY  (raw JWT, no 'Bearer' prefix)",
+        "openapi_url": "https://try-drumroll.mintlify.app/docs/drumroll-openapi.yaml",
+        "doc_url": "https://try-drumroll.mintlify.app/api-reference",
+        "urls": [],
+    },
 }
 
 # ── Aliases ─────────────────────────────────────────────────────────
 # Short names / synonyms that resolve to a real API key in API_SOURCES.
 API_ALIASES = {
     "jn": "jobnimbus",
+    "drum": "drumroll",
     "maps": "googlemaps",
     "gmaps": "googlemaps",
 }

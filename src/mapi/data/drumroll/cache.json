@@ -1,0 +1,11 @@
+{
+  "curl:log in with email and password": {
+    "code": "curl -X POST -H \"Content-Type: application/json\" -d '{\"email\": \"user@example.com\", \"password\": \"YOUR_PASSWORD\"}' https://api.trydrumroll.com/authentications",
+    "endpoint": "POST https://api.trydrumroll.com/authentications",
+    "verification": {
+      "verified": true,
+      "status": 500,
+      "message": "Failed query: select \"id\", \"firstName\", \"lastName\", \"password\", \"email\", \"company\", \"mainCompany\", \"profilePicture\", \"deactivated\", \"role\", \"created date\", \"updated date\" from \"user\" where lower(\"user"
+    }
+  }
+}

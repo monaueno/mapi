@@ -1,0 +1,186 @@
+{
+  "service_name": "Drumroll API",
+  "auth": "Pass JWT as header: Authorization: YOUR_API_KEY  (raw JWT, no 'Bearer' prefix)",
+  "doc_url": "https://try-drumroll.mintlify.app/api-reference",
+  "base_url": "https://api.trydrumroll.com",
+  "endpoints": [
+    {
+      "action": "log in (exchange email + password for a jwt)",
+      "method": "POST",
+      "endpoint": "https://api.trydrumroll.com/authentications",
+      "description": "Log in (exchange email + password for a JWT)",
+      "params": "email (body), password (body)",
+      "query_params": [],
+      "tags": [
+        "Authentication"
+      ],
+      "auth": "No authentication required",
+      "example_body": {
+        "email": "user@example.com",
+        "password": "YOUR_PASSWORD"
+      },
+      "example_response": {
+        "token": "string",
+        "user": "string"
+      }
+    },
+    {
+      "action": "get a user",
+      "method": "GET",
+      "endpoint": "https://api.trydrumroll.com/users/{userId}",
+      "description": "Get a user",
+      "params": "userId (path, required)",
+      "query_params": [],
+      "tags": [
+        "Users"
+      ],
+      "auth": "Pass token as header: Authorization: YOUR_API_KEY",
+      "example_body": null,
+      "example_response": {
+        "id": "string",
+        "firstName": "string",
+        "lastName": "string",
+        "email": "user@example.com",
+        "company": "string",
+        "mainCompany": "string",
+        "profilePicture": {},
+        "deactivated": false,
+        "role": 0,
+        "createdAt": "2024-01-01T00:00:00Z",
+        "updatedAt": "2024-01-01T00:00:00Z",
+        "companyName": "string"
+      }
+    },
+    {
+      "action": "list a company's employees (role = employee only)",
+      "method": "GET",
+      "endpoint": "https://api.trydrumroll.com/companies/{companyId}/employees",
+      "description": "List a company's employees (role = employee only)",
+      "params": "companyId (path, required)",
+      "query_params": [],
+      "tags": [
+        "Employees"
+      ],
+      "auth": "Pass token as header: Authorization: YOUR_API_KEY",
+      "example_body": null,
+      "example_response": [
+        {
+          "id": "string",
+          "name": "string",
+          "firstName": "string",
+          "lastName": "string",
+          "email": "user@example.com",
+          "company": "string",
+          "profilePicture": {},
+          "createdAt": "2024-01-01T00:00:00Z",
+          "updatedAt": "2024-01-01T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "action": "get one employee (empty body if the id doesn't exist)",
+      "method": "GET",
+      "endpoint": "https://api.trydrumroll.com/companies/{companyId}/employees/{employeeId}",
+      "description": "Get one employee (empty body if the id doesn't exist)",
+      "params": "companyId (path, required), employeeId (path, required)",
+      "query_params": [],
+      "tags": [
+        "Employees"
+      ],
+      "auth": "Pass token as header: Authorization: YOUR_API_KEY",
+      "example_body": null,
+      "example_response": {
+        "id": "string",
+        "name": "string",
+        "firstName": "string",
+        "lastName": "string",
+        "email": "user@example.com",
+        "company": "string",
+        "profilePicture": {},
+        "createdAt": "2024-01-01T00:00:00Z",
+        "updatedAt": "2024-01-01T00:00:00Z"
+      }
+    },
+    {
+      "action": "create a job",
+      "method": "POST",
+      "endpoint": "https://api.trydrumroll.com/companies/{companyId}/jobs",
+      "description": "`company` is taken from the URL and `employee` from the token \u2014 do not send them in the body. Requires the company to have Jobs enabled.",
+      "params": "companyId (path, required), customerName (body), customerPhone (body), customerEmail (body), location (body), jobTypeTags (body), photos (body), status (body)",
+      "query_params": [],
+      "tags": [
+        "Jobs"
+      ],
+      "auth": "Pass token as header: Authorization: YOUR_API_KEY",
+      "example_body": {
+        "customerName": "string",
+        "customerPhone": "+15555550123",
+        "customerEmail": "user@example.com",
+        "location": "string",
+        "jobTypeTags": [
+          "string"
+        ],
+        "photos": {},
+        "status": "incomplete"
+      },
+      "example_response": {
+        "id": "string",
+        "company": "string",
+        "employee": "string",
+        "customerName": "string",
+        "customerPhone": "+15555550123",
+        "customerEmail": "user@example.com",
+        "location": "string",
+        "jobTypeTags": [
+          "string"
+        ],
+        "photos": {},
+        "status": "string",
+        "createdAt": "2024-01-01T00:00:00Z",
+        "updatedAt": "2024-01-01T00:00:00Z"
+      }
+    },
+    {
+      "action": "send a review request to a customer",
+      "method": "POST",
+      "endpoint": "https://api.trydrumroll.com/api/review-requests",
+      "description": "Drumroll generates the tracked link and handles reminders. The company is derived from the authenticated user's token (never the body). The company must have a Google Place ID configured, or the request is rejected 400.",
+      "params": "customerName (body), customerPhone (body), customerEmail (body), employee (body), job (body), followUps (body), linkDestination (body)",
+      "query_params": [],
+      "tags": [
+        "Review Requests"
+      ],
+      "auth": "Pass token as header: Authorization: Bearer YOUR_API_KEY",
+      "example_body": {
+        "customerName": "string",
+        "customerPhone": "+15555550123",
+        "customerEmail": "user@example.com",
+        "employee": "string",
+        "job": "string",
+        "followUps": true,
+        "linkDestination": "drumroll"
+      },
+      "example_response": {
+        "request": {
+          "id": "string",
+          "company": "string",
+          "employee": "string",
+          "job": "string",
+          "customer_name": "string",
+          "customer_phone": "+15555550123",
+          "customer_email": "user@example.com",
+          "token": "string",
+          "batch": "string",
+          "status": "string",
+          "source": "string",
+          "clicked_at": "2024-01-01T00:00:00Z",
+          "created_by": "string",
+          "link_destination": "drumroll",
+          "created_at": "2024-01-01T00:00:00Z",
+          "updated_at": "2024-01-01T00:00:00Z"
+        },
+        "dispatched": false
+      }
+    }
+  ]
+}

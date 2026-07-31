@@ -299,8 +299,12 @@ Rules:
             'query_params': chosen.get('query_params', []),
             'example_body': chosen.get('example_body'),
         }
+        # Prefer endpoint-specific auth when the spec defines it (e.g. a login
+        # endpoint needs none; some endpoints use Bearer while others use a raw
+        # token). Fall back to the API-wide auth.
+        endpoint_auth = chosen.get('auth') or docs.get('auth', 'See documentation')
         user_msg = f"""API: {docs['service_name']}
-Auth: {docs.get('auth', 'See documentation')}
+Auth: {endpoint_auth}
 
 Use THIS endpoint (already resolved from the user's request):
 {json.dumps(gen_view, indent=2)}
